@@ -1,0 +1,127 @@
+ <main class="my-5">
+
+    <div class="container">
+
+      <div class="row text-center text-success">
+        <h2 style="font-size: 40px;">Bem vindo de Volta <strong>{{user.name}}</strong>!</h2>
+      </div>
+      <div class="row my-5">
+
+        <div class="col">
+
+          <div class="bg-dark text-white my-3 text-center card">
+
+            <div class="card-body">
+
+              <h1 class="mt-3">Lembretes</h1>
+              Você tem 5 agendamentos restantes,
+              <a href="">Clique aqui para ver nossos planos</a>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="col">
+          {{#if session.userId}}
+                    <img src="{{user.img}}" style="border-radius: 50%; width: 120px; height: auto; margin-left: 20em;">
+                {{/if}}
+        </div>
+
+      </div>
+
+      <div class="row my-5">
+
+        <div class="col">
+
+          <h1 class="mt-1 text-primary" style="margin-left: 160px; font-size: 30px;">Recomendações</h1>
+
+          <div class="bg-secondary text-white my-3 text-center card">
+            <ul class="list-group nav-pills nav-stacked" style="height: 240px; overflow-y: scroll;">
+              <li class="list-group-item active nav-item" aria-current="true"><a href=""><img
+                    src="./img/image.png" alt="" class="img-fluid mt-1"
+                    style="width: auto; margin-top: 200px; height: 80px; border-radius: 24px; margin-right: 200px;"></a>
+                <a class="text-white" href=""><b
+                    style="font-size: 20px; margin-right: 45px;">Moe's</b></a>
+                <div class="progress" style="margin-left: 40%;" role="progressbar" aria-label="Basic example"
+                  aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
+                  <div class="progress-bar bg-info" style="width: 75%"></div>
+                </div>
+                <p class="text-warning mt-1" style="margin-left: 200px; font-size: 20px;"><b>3.25/5.0</b></p>
+              </li>
+              <li class="list-group-item nav-item"> <a class="nav-link" href="#"><img src="./img/jeff.png" alt=""
+                    class="img-fluid mt-1"
+                    style="width: auto; margin-top: 200px; height: 80px; border-radius: 24px; margin-right: 200px;"> <b
+                    style="font-size: 20px; margin-right: 45px;">Jeff</b>
+                  <div class="progress" style="margin-left: 40%;" role="progressbar" aria-label="Basic example"
+                    aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar bg-info" style="width: 80%"></div>
+                  </div>
+                  <p class="text-warning mt-1" style="margin-left: 200px; font-size: 20px;"><b>4.0/5.0</b></p>
+                </a></li>
+              <li class="list-group-item nav-item"> <a class="nav-link" href="#"><img src="./img/jeff.png" alt=""
+                    class="img-fluid mt-1"
+                    style="width: auto; margin-top: 200px; height: 80px; border-radius: 24px; margin-right: 200px;"> <b
+                    style="font-size: 20px; margin-right: 45px;">Jeff</b>
+                  <div class="progress" style="margin-left: 40%;" role="progressbar" aria-label="Basic example"
+                    aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar bg-info" style="width: 80%"></div>
+                  </div>
+                  <p class="text-warning mt-1" style="margin-left: 200px; font-size: 20px;"><b>4.0/5.0</b></p>
+                </a></a></li>
+              <li class="list-group-item nav-item"> <a class="nav-link" href="#"><img src="./img/jeff.png" alt=""
+                    class="img-fluid mt-1"
+                    style="width: auto; margin-top: 200px; height: 80px; border-radius: 24px; margin-right: 200px;"> <b
+                    style="font-size: 20px; margin-right: 45px;">Jeff</b>
+                  <div class="progress" style="margin-left: 40%;" role="progressbar" aria-label="Basic example"
+                    aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar bg-info" style="width: 80%"></div>
+                  </div>
+                  <p class="text-warning mt-1" style="margin-left: 200px; font-size: 20px;"><b>4.0/5.0</b></p>
+                </a></a></li>
+              <li class="list-group-item nav-item"> <a class="nav-link" href="#"><img src="./img/jeff.png" alt=""
+                    class="img-fluid mt-1"
+                    style="width: auto; margin-top: 200px; height: 80px; border-radius: 24px; margin-right: 200px;"> <b
+                    style="font-size: 20px; margin-right: 45px;">Jeff</b>
+                  <div class="progress" style="margin-left: 40%;" role="progressbar" aria-label="Basic example"
+                    aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar bg-info" style="width: 80%"></div>
+                  </div>
+                  <p class="text-warning mt-1" style="margin-left: 200px; font-size: 20px;"><b>4.0/5.0</b></p>
+                </a></a></li>
+            </ul>
+          </div>
+
+        </div>
+
+        <div class="col">
+
+          <h1 class="mt-1 text-primary" style="margin-left: 160px; font-size: 30px;">Próximos Eventos</h1>
+
+          <div class="bg-secondary text-white my-3 text-center card">
+            <ul class="list-group nav-pills nav-stacked" style="height: 240px; overflow-y: scroll;">
+              <li class="list-group-item nav-item" style="font-size: 20px;"><a class="nav-link"
+                  href="">Rua Avelino dos Santos, 431. <br> 19/05/2024 - 19:00</a>
+              </li>
+              <li class="list-group-item nav-item" style="font-size: 20px;"> <a class="nav-link"
+                  href="">Rua Ernesto Migliorini, 67. <br> 19/05/2024 - 18:00</a>
+              </li>
+              <li class="list-group-item nav-item" style="font-size: 20px;"> <a class="nav-link"
+                  href="">Rua Maria Helena Lopes, 30. <br> 19/05/2024 - 22:00</a>
+              </li>
+              <li class="list-group-item nav-item" style="font-size: 20px;"> <a class="nav-link"
+                  href="">Rua Armando panunzio, 70. <br> 07/05/2024 - 09:00</a></li>
+              <li class="list-group-item nav-item" style="font-size: 20px;"> <a class="nav-link"
+                  href="">Rua 9 de Julho, 431. <br> 19/05/2024 - 19:00</a></li>
+            </ul>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+  </main>

@@ -1,0 +1,81 @@
+<div class="home-header">
+    <img src="{{image}}" alt="">
+    <i>Aqui seu Pet é mais feliz.</i>
+    {{#if search}}
+    <h1>Você está buscando por <span>{{search}}</span></h1>
+    <h2>resultados encontrados: {{qtyResults}}</h2>
+    <form action="/" method="get">
+        <input type="text" name="search" placeholder="Continuar buscando?" class="searchBar">
+        <input type="submit" value="Buscar" class="btn">
+    </form>
+    <div class="order-container">
+        <span>Ordenar por:</span>
+        <form action="/"  method="get">
+            <input type="hidden" name="search" value="{{this.search}}">
+            <input type="hidden" name="order" value="new"> 
+            <button type="submit">⬆️</button> 
+        </form>
+        <form action="/"  method="get">
+            <input type="hidden" name="search" value="{{this.search}}">
+            <input type="hidden" name="order" value="old"> 
+            <button type="submit">⬇️</button> 
+        </form>
+        <a href="/">Limpar</a>
+    </div>
+</div>
+    {{else}}
+    <h1>Todos os <span>Pets</span>:</h1>
+    <form action="/" method="get">
+        <input type="text" name="search" placeholder="Algum nome em mente?" class="searchBar" style="text-color: blue;">
+        <input type="submit" value="Buscar" class="btn">
+    </form>
+    <div class="order-container">
+        <span>Ordenar por:</span>
+        <form action="/"  method="get">
+            <input type="hidden" name="search" value="{{this.search}}">
+            <input type="hidden" name="order" value="new"> 
+            <button type="submit">⬆️</button> 
+        </form>
+        <form action="/"  method="get">
+            <input type="hidden" name="search" value="{{this.search}}">
+            <input type="hidden" name="order" value="old"> 
+            <button type="submit">⬇️</button> 
+        </form>
+        <a href="/">Limpar</a>
+    </div>
+</div>
+    {{/if}}
+<div class="thoughts-container">
+    {{#each filteredThoughts}}
+        <img src="{{this.image}}" alt="">
+        <div style="border: 1px solid gray;
+  padding: 8px; max-width: 50%; margin-left: 450px; margin-top: 10px; margin-bottom: 10px;">
+  <h1 style=" text-align: center;
+  text-transform: uppercase;
+  color: #F6982d;">Detalhes do Pet</h1>
+  <br>
+  <p style="text-indent: 50px;
+  text-align: justify;
+  letter-spacing: 3px;">Este Pet fofissimo tem {{this.age}} anos de idade, pesa {{this.weight}} kgs e está ansioso para conhecer seu(sua) novo(a) dono(a).</p>
+</div>
+        <figure>
+                 <blockquote>"{{this.title}}"</blockquote>
+                <figcaption>
+                    Dono:
+                    <span>
+                    <a href="/thoughts/profile/{{this.userName}}" style="color: #F6982d;">{{this.userName}}</a>
+                    </span>
+                    {{#if this.available}}
+                    <span>
+                        <div style=" padding: .5em 1.2em;
+    margin-bottom: 1em; margin-top: 10px;"><a href="/thoughts/adopt/{{this.id}}" class="btn">Adotar</a></div>
+                    </span>
+                    {{else}}
+                    <br>
+                    <br>
+                    <span style="margin-top: 30px; color: grey; font-size: 30px;">Adotado</span>
+                    {{/if}}
+                </figcaption>
+        </figure>
+    {{/each}}
+</div>

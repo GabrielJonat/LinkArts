@@ -1,0 +1,38 @@
+    {{#if profile.image}}
+    <img src="{{profile.image}}" alt="" style="margin-left: 41.5%; margin-right: 58.5%; margin-top: 3%; max-width: 300px; border-radius: 50%">
+    {{else}}
+    <img src="/img/User.png" alt="" style="margin-left: 40%; margin-right: 60%; max-width: 300px; margin-top: 3%;">
+    {{/if}}
+    <h1 style=" text-align: center; font-size: 70px; margin-bottom: 100px; margin-top: 10px; color:greenyellow">{{user.name}}</h1>
+    <form>
+        <div class="form-control">
+            {{#if profile.state}}
+            <label for="title" style="font-size: 24px;"><span style="color: #F6982d;">Estado:</span> {{profile.state}}</label><br>
+            {{else}}
+            <label for="title" style="font-size: 24px;"><span style="color: #F6982d;">Estado:</span> <span style="color: gray;">Desconhecido</span></label><br>
+            {{/if}}
+        </div>
+        <div class="form-control">
+            {{#if profile.city}}
+            <label for="weight" style="font-size: 24px;"><span style="color: #F6982d;">Cidade:</span> {{profile.city}}</label><br>
+            {{else}}
+            <label for="title" style="font-size: 24px;"><span style="color: #F6982d;">Cidade:</span> <span style="color: gray;">Desconhecido</span></label><br>
+            {{/if}}
+        </div>
+        <div class="form-control">
+            {{#if profile.description}}
+            <label for="age" style="font-size: 24px;"><span style="color: #F6982d;">Descrição:</span> {{profile.description}}</label><br>
+            {{else}}
+            <label for="title" style="font-size: 24px;"><span style="color: #F6982d;">Descrição:</span> <span style="color: gray;">Desconhecido</span></label><br>
+            {{/if}}
+        </div>
+        <div class="form-control">
+            <label for="color" style="font-size: 24px;"><span style="color: #F6982d;">Pets Cadastrados:</span> {{qtdPets}}</label><br>
+        </div>
+       <div class="form-control" >
+                <label for="image" style="font-size: 24px;"><span style="color: #F6982d;">Pets Adotados:</span> {{qtdAdopted}}</label><br>
+        </div>
+    </form>
+    {{#if selfView}}
+        <a href="/thoughts/editUser" class="profileBtn">Editar Perfil</a>
+    {{/if}}

@@ -1,0 +1,31 @@
+<div class="thought-form-container">
+
+    <a href="/thoughts/dashboard">Voltar</a>
+    <h1>Editando um Pet:</h1>
+    <form action="/thoughts/edit/{{thought.id}}" method="post" enctype="multipart/form-data">
+        <div class="form-control">
+            <label for="title">Nome:</label><br>
+            <input type="text" name="title" value="{{thought.title}}">
+        </div>
+        <div class="form-control">
+            <label for="weight">Peso:</label><br>
+            <input type="text" name="weight" value="{{thought.weight}}">
+        </div>
+        <div class="form-control">
+            <label for="age">Idade:</label><br>
+            <input type="text" name="age" value="{{thought.age}}">
+        </div>
+        <div class="form-control">
+            <label for="color">Cor:</label><br>
+            <input type="text" name="color" value="{{thought.color}}">
+        </div>
+       <div class="form-control">
+                <label for="image">Selecionar Imagem:</label><br>
+                <input type="file" id="image" name="image" accept="image/*" required>
+        </div>
+        <div class="submit">
+             <input type="submit" value="Cadastrar">
+        </div>
+    </form>
+
+</div>

@@ -1,0 +1,31 @@
+<div class="thought-form-container">
+
+    <a href="/thoughts/dashboard">Voltar</a>
+    <h1>Cadastrando um Pet:</h1>
+    <form action="/thoughts/add" method="post" enctype="multipart/form-data">
+        <div class="form-control">
+            <label for="title">Nome:</label><br>
+            <input type="text" name="title" placeholder="DIgite o nome do seu Pet">
+        </div>
+        <div class="form-control">
+            <label for="weight">Peso:</label><br>
+            <input type="text" name="weight" placeholder="DIgite o peso do seu Pet">
+        </div>
+        <div class="form-control">
+            <label for="age">Idade:</label><br>
+            <input type="text" name="age" placeholder="DIgite a idade do seu Pet">
+        </div>
+        <div class="form-control">
+            <label for="color">Cor:</label><br>
+            <input type="text" name="color" placeholder="DIgite a cor do seu Pet">
+        </div>
+       <div class="form-control">
+                <label for="image">Selecionar Imagem:</label><br>
+                <input type="file" id="image" name="image" accept="image/*" required>
+        </div>
+        <div class="submit">
+             <input type="submit" value="Cadastrar">
+        </div>
+    </form>
+
+</div>
