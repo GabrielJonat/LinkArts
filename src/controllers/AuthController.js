@@ -93,7 +93,18 @@ module.exports = class AuthController{
             res.render('auth/register')
             return
         }
+        const auth = '15004%7CSgq5FoEVFxi3N3bGKEBQAUQy2DS67vQX';
+        const response3 = await fetch(`https://api.invertexto.com/v1/validator?token=${auth}&value=${cpf_cnpj}&type=cnpj`);
+        const response2 = await fetch(`https://api.invertexto.com/v1/validator?token=${auth}&value=${cpf_cnpj}&type=cpf`);
+        const cpf = await response2.json();
+        const cnpj = await response3.json();
+        console.log(cpf,cnpj)
+        if(!cpf.valid && !cnpj.valid){
 
+            req.flash('message', 'CPF/CNPJ não encontrado!')
+            res.render('auth/register')
+            return
+        }
         if(password.length < 6 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)){
 
             req.flash('message', 'A senha deve ter pelo menos 6 caracteres, incluindo no mínimo uma letra maiúscula, uma minúscula e um número')
