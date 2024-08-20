@@ -61,6 +61,7 @@ module.exports = class ThoughtController{
        
         const user = await User.findOne({where: {id:req.session.userId}})
         console.log(user)
+        
         res.render('thoughts/dashboard', {session: req.session, user})
 
     }
