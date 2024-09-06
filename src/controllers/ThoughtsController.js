@@ -60,9 +60,17 @@ module.exports = class ThoughtController{
     static async dashboard(req,res){
        
         const user = await User.findOne({where: {id:req.session.userId}})
-        console.log(user)
+        let connections
+        if(user.accountType == 'Empresa'){
+
+            connections = await User.findAll({where: {accountType:'Artista'}})
+        }
+        else{
+
+            connections = await User.findAll({where: {accountType:'Empresa'}})
+        }
         
-        res.render('thoughts/dashboard', {session: req.session, user})
+        res.render('thoughts/dashboard', {session: req.session, user,connections})
 
     }
 

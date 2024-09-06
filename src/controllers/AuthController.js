@@ -99,6 +99,12 @@ module.exports = class AuthController{
         const cpf = await response2.json();
         const cnpj = await response3.json();
         console.log(cpf,cnpj)
+        if((accountType == 'Empresa' && response2.valid) || (accountType == 'Artista' && response3.valid)){
+
+            req.flash('message', 'CPF/CNPJ inválido')
+            res.render('auth/register')
+            return
+        }
         if(!cpf.valid && !cnpj.valid){
 
             req.flash('message', 'CPF/CNPJ não encontrado!')
