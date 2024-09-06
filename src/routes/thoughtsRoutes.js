@@ -31,8 +31,7 @@ router.get('/rejectAdoption/:id', ThoughtsController.rejectAdoption)
 router.get('/chat/:email',ThoughtsController.chat)
 router.get('/friends',ThoughtsController.getFriends)
 router.get('/profile',ThoughtsController.viewProfile)
-router.get('/profile/:name',ThoughtsController.viewUserProfile)
-router.get('/profileId/:id',ThoughtsController.viewUserProfileById)
+router.get('/profile/:id',ThoughtsController.viewUserProfileById)
 router.get('/', ThoughtsController.showThoughts)
 
 

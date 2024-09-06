@@ -34,6 +34,10 @@ const User = db.define('User', {
     },
     img: {
         type: DataTypes.STRING,
+    },
+    description: {
+        type: DataTypes.STRING,
+        require: false,
     }
 })
 

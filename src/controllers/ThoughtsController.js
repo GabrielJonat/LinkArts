@@ -7,7 +7,7 @@ const Profile = require('../models/profile')
 const session = require('express-session')
 const axios = require('axios')
 const { use } = require('../routes/thoughtsRoutes')
-const { Op } = require('sequelize');
+const { Op, where } = require('sequelize');
 
 module.exports = class ThoughtController{
 
@@ -380,20 +380,16 @@ module.exports = class ThoughtController{
 
     static async viewProfile(req,res){
 
-        const user = await User.findOne({where: {id:req.session.userId}})
-        const profile = await Profile.findOne({where: {userId:req.session.userId}})
-        const pets = await Thought.findAll({where:{UserId:req.session.userId}})
-        let qtdAdopted = 0
-        let qtdPets = pets.length
-        pets.forEach(thought => {
-
-            if(thought.adopter){
-
-                qtdAdopted++;
-            }
-        })
         let selfView = true
-        res.render('thoughts/profile', {session: req.session,user,profile,qtdAdopted,qtdPets,selfView})        
+        const user = await User.findOne({where: {id:req.session.userId}})
+        let type
+        if(user.accountType === 'Empresa'){
+            type = 1
+        }
+        else{
+            type = 0
+        }
+        res.render('thoughts/profile', {session: req.session,user,selfView,type})        
     }
 
     static async viewUserProfile(req,res){
@@ -417,20 +413,16 @@ module.exports = class ThoughtController{
 
     static async viewUserProfileById(req,res){
 
-        const name = req.params.id
-        const user = await User.findOne({where: {id:name}})
-        const profile = await Profile.findOne({where: {userId:user.id}})
-        const pets = await Thought.findAll({where:{UserId:user.id}})
-        let qtdAdopted = 0
-        let qtdPets = pets.length
-        pets.forEach(thought => {
-
-            if(thought.adopter){
-
-                qtdAdopted++;
-            }
-        })
+        const id = req.params.id
+        const user = await User.findOne({where: {id:id}})
+        let type
+        if(user.accountType === 'Empresa'){
+            type = 1
+        }
+        else{
+            type = 0
+        }
         let selfView = false
-        res.render('thoughts/profile', {session: req.session,user,profile,qtdAdopted,qtdPets,selfView})        
+        res.render('thoughts/profile', {session: req.session,user,type,selfView})        
     }
 }

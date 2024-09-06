@@ -67,7 +67,7 @@ module.exports = class AuthController{
 
     static async postRegister(req,res){
         
-        const {name, email, password, confirmPassword, cpf_cnpj, accountType, state, city} = req.body
+        const {name, email, password, confirmPassword, cpf_cnpj, descricao, accountType, state, city} = req.body
         let imageUrl
         console.log(req.file)
         if(req.file){
@@ -154,6 +154,7 @@ module.exports = class AuthController{
             password:hashedPassword,
             img: imageUrl,
             accountType: accountType,
+            description: descricao,
             CPF_CNPJ: cpf_cnpj,
             state: state,
             city: city
