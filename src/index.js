@@ -9,9 +9,7 @@ const { Op } = require('sequelize');
 const app = express();
 const bodyParser = require('body-parser');
 const conn = require('./db/conn');
-const Thought = require('./models/thoughts');
 const User = require('./models/user');
-const Profile = require('./models/profile');
 const Message = require('./models/message');
 const Token = require('./models/token');
 const thoughtsRoutes = require('./routes/thoughtsRoutes');
@@ -76,6 +74,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/thoughts', thoughtsRoutes);
 app.use('/', authRoutes);
 app.get('/', AuthController.login);
+app.get('/thoughts/login', async (req,res) => {
+  
+  res.render('auth/login')
+})
 app.get('/sendCode/:email', async (req, res) => {
 
   console.log('Iniciando processo de reset de senha...')

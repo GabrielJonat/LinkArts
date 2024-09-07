@@ -63,7 +63,7 @@
 
     <div class="form-container">
         <h2>Proposta para Tocar em {{empresa.name}}</h2>
-        <form action="/thoughts/proposta/{{user.id}}/{{empresa.id}}" method="POST">
+        <form action="/thoughts/proposta/{{sender.id}}/{{receiver.id}}" method="POST">
             <label for="data_evento">Data do Evento:</label>
             <input type="date" id="data_evento" name="data" required>
 

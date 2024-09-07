@@ -41,8 +41,8 @@
               {{#each connections}}
                 <li class="list-group-item active nav-item" aria-current="true"><a href="/thoughts/profile/{{this.id}}"><img
                       src="{{this.img}}" alt="Foto de Perfil" class="img-fluid mt-1"
-                      style="width: auto; margin-top: 200px; height: 80px; border-radius: 24px; margin-right: 200px;"></a>
-                  <a class="text-white" href=""><b
+                      style="width: auto; margin-top: 200px; height: 80px; border-radius: 50%; margin-right: 200px;"></a>
+                  <a class="text-white" href="/thoughts/profile/{{this.id}}"><b
                       style="font-size: 20px; margin-right: 45px;">{{this.name}}</b></a>
                   <div class="progress" style="margin-left: 40%;" role="progressbar" aria-label="Basic example"
                     aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
@@ -62,19 +62,11 @@
 
           <div class="bg-secondary text-white my-3 text-center card">
             <ul class="list-group nav-pills nav-stacked" style="height: 240px; overflow-y: scroll;">
+              {{#each propostas}}
               <li class="list-group-item nav-item" style="font-size: 20px;"><a class="nav-link"
-                  href="EventoScreenFrank.html">Rua Avelino dos Santos, 431. <br> 19/05/2024 - 19:00</a>
+                  href="">data: {{this.data}}<br>hora: {{this.hora}}<br>valor/hora: {{this.valorHora}}<br>nome/razão social: {{this.empresa.name}}<br>email: {{this.empresa.email}}</a>
               </li>
-              <li class="list-group-item nav-item" style="font-size: 20px;"> <a class="nav-link"
-                  href="EventoScreenFrank.html">Rua Ernesto Migliorini, 67. <br> 19/05/2024 - 18:00</a>
-              </li>
-              <li class="list-group-item nav-item" style="font-size: 20px;"> <a class="nav-link"
-                  href="EventoScreenFrank.html">Rua Maria Helena Lopes, 30. <br> 19/05/2024 - 22:00</a>
-              </li>
-              <li class="list-group-item nav-item" style="font-size: 20px;"> <a class="nav-link"
-                  href="EventoScreenFrank.html">Rua Armando panunzio, 70. <br> 07/05/2024 - 09:00</a></li>
-              <li class="list-group-item nav-item" style="font-size: 20px;"> <a class="nav-link"
-                  href="EventoScreenFrank.html">Rua 9 de Julho, 431. <br> 19/05/2024 - 19:00</a></li>
+              {{/each}}
             </ul>
           </div>
 

@@ -31,7 +31,7 @@
                                   <p class="card-text text-dark" style="text-align: justify;">Hora: {{this.hora}}</p>
                                   <p class="card-text text-dark" style="text-align: justify;">Valor/Hora: R${{this.valorHora}}</p>
                                   <p class="card-text text-dark" style="text-align: justify;">Mensagem: {{this.mensagem}}</p>
-                                  <p class="card-text text-dark" style="text-align: justify;">Status: {{this.status}}</p>
+                                  <p class="card-text text-dark" style="text-align: justify;">Status: <mark style="font-weight: bold; font-size: 20px; color: gray">{{this.status}}</mark></p>
                                 </div>
                               </div>
                             </div>
@@ -54,19 +54,21 @@
                               <div class="col-md-4">
                                 <img src="{{this.sender.img}}" class="img-fluid rounded-start" alt="imagem do usuário">
                                 
+                                {{#if this.aval}}
                                 <div class="dropdown">
                                     <a class="btn btn-success dropdown-toggle my-3" href="" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                       Avaliar Proposta
                                     </a>
                                   
                                     <div class="dropdown-content">
-                                    <a class="dropdown-item" href="">Aceitar</a>
-                                    <a class="dropdown-item" href="">Negar</a>
+                                    <a class="dropdown-item" href="/thoughts/aceitarProposta/{{this.id}}">Aceitar</a>
+                                    <a class="dropdown-item" href="/thoughts/negarProposta/{{this.id}}">Negar</a>
                                     <a class="dropdown-item" href="">Enviar Mensagem</a>
                                     </div>
                                   </div>
-                
+                                  {{/if}}
                             </div>
+                            
                               <div class="col-md-8">
                                 <div class="card-body">
                                   <h5 class="card-title text-info" style="text-align: justify;">Detalhes da Proposta</h5>
@@ -75,7 +77,7 @@
                                   <p class="card-text text-dark" style="text-align: justify;">Hora: {{this.hora}}</p>
                                   <p class="card-text text-dark" style="text-align: justify;">Valor/Hora: R${{this.valorHora}}</p>
                                   <p class="card-text text-dark" style="text-align: justify;">Mensagem: {{this.mensagem}}</p>
-                                  <p class="card-text text-dark" style="text-align: justify;">Status: {{this.status}}</p>
+                                  <p class="card-text text-dark" style="text-align: justify;">Status: <mark style="font-weight: bold; font-size: 20px; color: gray">{{this.status}}</mark></p>
                                   
                                 </div>
                               </div>

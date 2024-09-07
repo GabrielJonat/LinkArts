@@ -1,6 +1,4 @@
-const Thought = require('../models/thoughts')
 const User = require('../models//user')
-const Profile = require('../models/profile')
 const Token = require('../models/token')
 const bcrypt = require('bcryptjs')
 const { where } = require('sequelize')
@@ -12,6 +10,10 @@ const { redirect } = require('statuses')
 module.exports = class AuthController{
 
     static async login(req,res){
+        if(!req.session.userId){
+            req.session.userId = 0
+        }
+        console.log(req.session.userId)
         res.render('auth/login')
     }
 
@@ -46,6 +48,7 @@ module.exports = class AuthController{
 
         else{
             req.session.userId = user.id
+            console.log(req.session.userId)
             req.flash('message', 'autenticação realizada com sucesso!')
             req.session.save(() => {
                 
