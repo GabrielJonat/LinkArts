@@ -69,14 +69,14 @@
 
         <div class="col">
           {{#if selfView}}
-            <a href="" class="btn btn-primary">Minhas Propostas</a>
+            <a href="/thoughts/propostas" class="btn btn-primary">Minhas Propostas</a>
             <a href="" class="btn btn-primary">Minha Agenda</a>
           {{else}}
             {{#if type}}
-              <a href="" class="btn btn-primary">Agenda da Empresa</a>
+              <a href="/thoughts/propostaArtista/{{user.id}}" class="btn btn-primary">Fazer Proposta à Empresa</a>
               <a href="" class="btn btn-primary">Abrir Conversa</a>
             {{else}}
-              <a href="" class="btn btn-primary">Agenda da Empresa</a>
+              <a href="" class="btn btn-primary">Fazer Proposta ao Artista</a>
               <a href="" class="btn btn-primary">Abrir Conversa</a>
             {{/if}}
           {{/if}}

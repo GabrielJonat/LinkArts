@@ -8,6 +8,8 @@ const session = require('express-session')
 const axios = require('axios')
 const { use } = require('../routes/thoughtsRoutes')
 const { Op, where } = require('sequelize');
+const Proposta = require('../models/proposta')
+const moment = require('moment');
 
 module.exports = class ThoughtController{
 
@@ -411,6 +413,14 @@ module.exports = class ThoughtController{
         res.render('thoughts/profile', {session: req.session,user,profile,qtdAdopted,qtdPets,selfView})        
     }
 
+    static async viewPropostaArtistaById(req,res){
+
+        const id = req.params.id
+        const empresa = await User.findOne({where: {id:id}})
+        const user = await User.findOne({where: {id:req.session.userId}})
+        res.render('thoughts/proposta', {session: req.session,empresa,user})        
+    }
+
     static async viewUserProfileById(req,res){
 
         const id = req.params.id
@@ -424,5 +434,46 @@ module.exports = class ThoughtController{
         }
         let selfView = false
         res.render('thoughts/profile', {session: req.session,user,type,selfView})        
+    }
+
+    static async propostaPost(req,res){
+
+        const senderId = req.params.senderId
+        const receiverId = req.params.receiverId
+        const proposta = {
+            data: req.body.data,
+            hora: req.body.hora,
+            valorHora: req.body.valor,
+            mensagem: req.body.mensagem,
+            senderId: senderId,
+            receiverId:  receiverId,
+            status: 'pendente'
+        }
+        await Proposta.create(proposta)
+        req.flash('message', 'Proposta enviada com sucesso, aguardando resposta do usuário.')
+                req.session.save(() => {
+
+                    res.redirect('/thoughts/dashboard')    
+    })
+}
+
+    static async viewPropostas(req,res){
+
+        const propostasEnviadas = await Proposta.findAll({ where: { senderId: req.session.userId } });
+
+for (const proposta of propostasEnviadas) {
+    proposta.receiver = await User.findOne({ where: { id: proposta.receiverId } });
+    proposta.data = proposta.data ? moment(proposta.data).format('YYYY-MM-DD') : null;
+}
+
+const propostasRecebidas = await Proposta.findAll({ where: { receiverId: req.session.userId, status: 'pendente' } });
+
+for (const proposta of propostasRecebidas) {
+    proposta.sender = await User.findOne({ where: { id: proposta.senderId } });
+    proposta.data = proposta.data ? moment(proposta.data).format('YYYY-MM-DD') : null;
+}
+
+res.render('thoughts/minhasPropostas', { session: req.session, propostasEnviadas, propostasRecebidas });
+
     }
 }
