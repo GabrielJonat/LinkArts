@@ -12,6 +12,7 @@ const conn = require('./db/conn');
 const User = require('./models/user');
 const Message = require('./models/message');
 const Token = require('./models/token');
+const Local = require('./models/locais')
 const thoughtsRoutes = require('./routes/thoughtsRoutes');
 const authRoutes = require('./routes/authRoutes');
 const ThoughtController = require('./controllers/ThoughtsController');
@@ -221,6 +222,13 @@ app.get('/cities/:sigla', async (req, res) => {
 app.post('/messages', async (req, res) => {
     await Message.create(req.body)
   });
+
+  app.get('/loadEnderecos',async (req,res) => {
+    // Aqui você faria a chamada ao banco de dados para buscar as opções
+    // Simulação de resultados com base no que o usuário digitar
+    const response = await Local.findAll({where: {UserId:req.session.userId}})  
+    return response
+})
 
 conn.sync()
     .then(() => {

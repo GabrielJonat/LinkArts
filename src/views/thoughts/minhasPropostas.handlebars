@@ -4,7 +4,7 @@
 
           <div class="row my-5">
 
-              <a href="/thoughts/dashboard">Voltar</a>
+              <a href="/thoughts/profile/{{id}}">Voltar</a>
           </div>
 
             <div class="row my-5">
@@ -26,9 +26,10 @@
                               <div class="col-md-8">
                                 <div class="card-body">
                                   <h5 class="card-title text-info" style="text-align: justify;">Detalhes da Proposta</h5>
-                                  <p class="card-text text-dark" style="text-align: justify;">Proposta enviada: {{this.data}}</p>
+                                  <p class="card-text text-dark" style="text-align: justify;">data: {{this.dataFormatada}}</p>
                                   <p class="card-text text-dark" style="text-align: justify;">Proposta enviada para: {{this.receiver.name}}</p>
                                   <p class="card-text text-dark" style="text-align: justify;">Hora: {{this.hora}}</p>
+                                  <p class="card-text text-dark" style="text-align: justify;">Local: {{this.local}}</p>
                                   <p class="card-text text-dark" style="text-align: justify;">Valor/Hora: R${{this.valorHora}}</p>
                                   <p class="card-text text-dark" style="text-align: justify;">Mensagem: {{this.mensagem}}</p>
                                   <p class="card-text text-dark" style="text-align: justify;">Status: <mark style="font-weight: bold; font-size: 20px; color: gray">{{this.status}}</mark></p>
@@ -72,9 +73,10 @@
                               <div class="col-md-8">
                                 <div class="card-body">
                                   <h5 class="card-title text-info" style="text-align: justify;">Detalhes da Proposta</h5>
-                                  <p class="card-text text-dark" style="text-align: justify;">Proposta enviada: {{this.data}}</p>
+                                  <p class="card-text text-dark" style="text-align: justify;">data: {{this.dataFormatada}}</p>
                                   <p class="card-text text-dark" style="text-align: justify;">Proposta enviada por: {{this.sender.name}}</p>
                                   <p class="card-text text-dark" style="text-align: justify;">Hora: {{this.hora}}</p>
+                                  <p class="card-text text-dark" style="text-align: justify;">Local: {{this.local}}</p>
                                   <p class="card-text text-dark" style="text-align: justify;">Valor/Hora: R${{this.valorHora}}</p>
                                   <p class="card-text text-dark" style="text-align: justify;">Mensagem: {{this.mensagem}}</p>
                                   <p class="card-text text-dark" style="text-align: justify;">Status: <mark style="font-weight: bold; font-size: 20px; color: gray">{{this.status}}</mark></p>

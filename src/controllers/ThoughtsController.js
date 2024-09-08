@@ -6,30 +6,35 @@ const { use } = require('../routes/thoughtsRoutes')
 const { Op, where } = require('sequelize');
 const Proposta = require('../models/proposta')
 const moment = require('moment');
+const Local = require('../models/locais')
 
 module.exports = class ThoughtController{
 
     static async dashboard(req,res){
        
+        console.log(req.session.userId)
         if(req.session.userId){
         const user = await User.findOne({where: {id:req.session.userId}})
         let connections
+        let isEmpresa
         if(user.accountType == 'Empresa'){
-
+            isEmpresa = true
             connections = await User.findAll({where: {accountType:'Artista'}})
         }
         else{
-
+            isEmpresa = false
             connections = await User.findAll({where: {accountType:'Empresa'}})
         }
-        const propostas = await Proposta.findAll({
+       let propostas = await Proposta.findAll({
             where: {
               [Op.or]: [
                 { senderId: req.session.userId },
                 { receiverId: req.session.userId }
-              ],status: 'aceita'
-            }
+              ],
+              status: 'aceita'
+            },
           });
+        const hoje = new Date();  // Data de hoje
         propostas.forEach(async prop => {
 
             if(req.session.userId == prop.senderId){
@@ -38,14 +43,200 @@ module.exports = class ThoughtController{
             else{
                 prop.empresa = await User.findOne({where: {id: prop.senderId}})
             }
+            const data = new Date(prop.data)
+            if (data < hoje) {
+                const newProp = {
+                    id : prop.id,
+                    data: prop.data,
+                    hora: prop.hora,
+                    local: prop.local,
+                    valorHora: prop.valorHora,
+                    mensagem: prop.mensagem,
+                    senderId: prop.senderId,
+                    receiverId: prop.receiverId,
+                    status: 'expirada'
+                }
+                await Proposta.update(newProp,{where:{id:prop.id}})
+                console.log(`Proposta inválida: ${prop.id}`);
+            }
         })
-        res.render('thoughts/dashboard', {session: req.session, user,connections,propostas})}
+        // Filtra as propostas removendo aquelas com data inválida
+        propostas = propostas.filter(prop => {
+            const data = new Date(prop.data);
+            
+            // Se a data for menor que hoje, considera inválida
+            if (data < hoje) {
+                return false; // Remove a proposta
+            }
+        
+            // Formata a data corretamente para exibir
+            const dia = String(data.getDate()).padStart(2, '0');
+            const mes = String(data.getMonth() + 1).padStart(2, '0'); // Mês começa em 0
+            const ano = data.getFullYear();
+            prop.dataFormatada = `${dia}/${mes}/${ano}`;
+        
+            return true;  // Mantém a proposta
+        });
+        propostas.sort((a, b) => {
+            const dataA = new Date(a.data);
+            const dataB = new Date(b.data);
+        
+            // Ordena primeiro pela data da proposta
+            if (dataA < dataB) {
+                return -1; // 'a' vem antes de 'b'
+            } 
+            if (dataA > dataB) {
+                return 1;  // 'b' vem antes de 'a'
+            }
+        
+            // Se as datas forem iguais, ordena pela data de criação
+            const createdAtA = new Date(a.createdAt);
+            const createdAtB = new Date(b.createdAt);
+        
+            if (createdAtA < createdAtB) {
+                return -1; // 'a' vem antes de 'b'
+            } 
+            if (createdAtA > createdAtB) {
+                return 1;  // 'b' vem antes de 'a'
+            }
+        
+            // Se as datas de criação forem iguais, ordena pela data de atualização
+            const updatedAtA = new Date(a.updatedAt);
+            const updatedAtB = new Date(b.updatedAt);
+        
+            if (updatedAtA < updatedAtB) {
+                return -1; // 'a' vem antes de 'b'
+            } 
+            if (updatedAtA > updatedAtB) {
+                return 1;  // 'b' vem antes de 'a'
+            }
+        
+            // Mantém a ordem se todas as comparações resultarem em empate
+            return 0;
+        });
+        console.log(isEmpresa)
+        res.render('thoughts/dashboard', {session: req.session, user,connections,propostas,isEmpresa:isEmpresa})}
         else{
 
             res.redirect('404')
         }
 
     }
+
+    static async dashboardFail(req,res){
+       
+        req.session.userId = req.params.id
+        console.log(req.session.userId)
+        if(req.session.userId){
+        const user = await User.findOne({where: {id:req.session.userId}})
+        let connections
+        let isEmpresa
+        if(user.accountType == 'Empresa'){
+            isEmpresa = true
+            connections = await User.findAll({where: {accountType:'Artista'}})
+        }
+        else{
+            isEmpresa = false
+            connections = await User.findAll({where: {accountType:'Empresa'}})
+        }
+       let propostas = await Proposta.findAll({
+            where: {
+              [Op.or]: [
+                { senderId: req.session.userId },
+                { receiverId: req.session.userId }
+              ],
+              status: 'aceita'
+            },
+          });
+        const hoje = new Date();  // Data de hoje
+        propostas.forEach(async prop => {
+
+            if(req.session.userId == prop.senderId){
+            prop.empresa = await User.findOne({where: {id: prop.receiverId}})
+            }
+            else{
+                prop.empresa = await User.findOne({where: {id: prop.senderId}})
+            }
+            const data = new Date(prop.data)
+            if (data < hoje) {
+                const newProp = {
+                    id : prop.id,
+                    data: prop.data,
+                    hora: prop.hora,
+                    local: prop.local,
+                    valorHora: prop.valorHora,
+                    mensagem: prop.mensagem,
+                    senderId: prop.senderId,
+                    receiverId: prop.receiverId,
+                    status: 'expirada'
+                }
+                await Proposta.update(newProp,{where:{id:prop.id}})
+                console.log(`Proposta inválida: ${prop.id}`);
+            }
+        })
+        // Filtra as propostas removendo aquelas com data inválida
+        propostas = propostas.filter(prop => {
+            const data = new Date(prop.data);
+            
+            // Se a data for menor que hoje, considera inválida
+            if (data < hoje) {
+                return false; // Remove a proposta
+            }
+        
+            // Formata a data corretamente para exibir
+            const dia = String(data.getDate()).padStart(2, '0');
+            const mes = String(data.getMonth() + 1).padStart(2, '0'); // Mês começa em 0
+            const ano = data.getFullYear();
+            prop.dataFormatada = `${dia}/${mes}/${ano}`;
+        
+            return true;  // Mantém a proposta
+        });
+        propostas.sort((a, b) => {
+            const dataA = new Date(a.data);
+            const dataB = new Date(b.data);
+        
+            // Ordena primeiro pela data da proposta
+            if (dataA < dataB) {
+                return -1; // 'a' vem antes de 'b'
+            } 
+            if (dataA > dataB) {
+                return 1;  // 'b' vem antes de 'a'
+            }
+        
+            // Se as datas forem iguais, ordena pela data de criação
+            const createdAtA = new Date(a.createdAt);
+            const createdAtB = new Date(b.createdAt);
+        
+            if (createdAtA < createdAtB) {
+                return -1; // 'a' vem antes de 'b'
+            } 
+            if (createdAtA > createdAtB) {
+                return 1;  // 'b' vem antes de 'a'
+            }
+        
+            // Se as datas de criação forem iguais, ordena pela data de atualização
+            const updatedAtA = new Date(a.updatedAt);
+            const updatedAtB = new Date(b.updatedAt);
+        
+            if (updatedAtA < updatedAtB) {
+                return -1; // 'a' vem antes de 'b'
+            } 
+            if (updatedAtA > updatedAtB) {
+                return 1;  // 'b' vem antes de 'a'
+            }
+        
+            // Mantém a ordem se todas as comparações resultarem em empate
+            return 0;
+        });
+        console.log(isEmpresa)
+        res.render('thoughts/dashboard', {session: req.session, user,connections,propostas,isEmpresa:isEmpresa})}
+        else{
+
+            res.redirect('404')
+        }
+
+    }
+
 
     static async load404(req,res){
         res.render('thoughts/404', {session: req.session})
@@ -55,8 +246,8 @@ module.exports = class ThoughtController{
     static async viewProfile(req,res){
 
         let selfView = true
-        if(req.session.userId){
-        const user = await User.findOne({where: {id:req.session.userId}})
+        const user = await User.findOne({where: {id:req.params.id}})
+        req.session.userId = req.params.id
         let type
         if(user.accountType === 'Empresa'){
             type = 1
@@ -64,29 +255,7 @@ module.exports = class ThoughtController{
         else{
             type = 0
         }
-        res.render('thoughts/profile', {session: req.session,user,selfView,type})}
-        else{
-            res.redirect('404')
-        }  
-    }
-
-    static async viewUserProfile(req,res){
-
-        const name = req.params.name
-        const user = await User.findOne({where: {name:name}})
-        const profile = await Profile.findOne({where: {userId:user.id}})
-        const pets = await Thought.findAll({where:{UserId:user.id}})
-        let qtdAdopted = 0
-        let qtdPets = pets.length
-        pets.forEach(thought => {
-
-            if(thought.adopter){
-
-                qtdAdopted++;
-            }
-        })
-        let selfView = false
-        res.render('thoughts/profile', {session: req.session,user,profile,qtdAdopted,qtdPets,selfView})        
+        res.render('thoughts/profile', {session: req.session,user,selfView,type})  
     }
 
     static async viewPropostaArtistaById(req,res){
@@ -96,7 +265,8 @@ module.exports = class ThoughtController{
         const user = await User.findOne({where: {id:req.session.userId}})
         const sender = user
         const receiver = empresa
-        res.render('thoughts/proposta', {session: req.session,empresa,sender,receiver})        
+        let enderecoAllowed = false
+        res.render('thoughts/proposta', {session: req.session,empresa,sender,receiver,enderecoAllowed})        
     }
 
     static async viewPropostaEmpresaById(req,res){
@@ -106,7 +276,8 @@ module.exports = class ThoughtController{
         const user = await User.findOne({where: {id:id}})
         const sender = empresa
         const receiver = user
-        res.render('thoughts/proposta', {session: req.session,empresa,sender,receiver})        
+        let enderecoAllowed = true
+        res.render('thoughts/proposta', {session: req.session,empresa,sender,receiver,enderecoAllowed})        
     }
 
     static async viewUserProfileById(req,res){
@@ -132,93 +303,157 @@ module.exports = class ThoughtController{
             data: req.body.data,
             hora: req.body.hora,
             valorHora: req.body.valor,
+            local: req.body.endereco,
             mensagem: req.body.mensagem,
             senderId: senderId,
             receiverId:  receiverId,
             status: 'pendente'
         }
+        const hoje = new Date()
+        const data = new Date(proposta.data)
+        if(data < hoje){
+
+            req.flash('message', 'Não é possível fazer essa proposta.')
+                req.session.save(() => {
+
+                    res.redirect('/thoughts/dashboard')
+                    return 
+    })
+        }
+        else{
         console.log(proposta)
         await Proposta.create(proposta)
         req.flash('message', 'Proposta enviada com sucesso, aguardando resposta do usuário.')
                 req.session.save(() => {
 
                     res.redirect('/thoughts/dashboard')    
-    })
+    })}
 }
 
     static async viewPropostas(req,res){
 
+        const id = req.session.userId
         if(req.session.userId){
-        const propostasEnviadas = await Proposta.findAll({
+        let propostasEnviadas = await Proposta.findAll({
             where: {
-              status: { [Op.ne]: 'aceita' }, // Status diferente de 'aceito'
               senderId: req.session.userId   // senderId igual ao req.session.userId
             }
           });
+        const hoje = new Date()
+        for (const proposta of propostasEnviadas) {
+            proposta.receiver = await User.findOne({ where: { id: proposta.receiverId } });
+            // Formata a data corretamente para exibir
+            const data = new Date(proposta.data)
+            const dia = String(data.getDate()).padStart(2, '0');
+            const mes = String(data.getMonth() + 1).padStart(2, '0'); // Mês começa em 0
+            const ano = data.getFullYear();
+            proposta.dataFormatada = `${dia}/${mes}/${ano}`;
 
-for (const proposta of propostasEnviadas) {
-    proposta.receiver = await User.findOne({ where: { id: proposta.receiverId } });
-    proposta.data = proposta.data ? moment(proposta.data).format('YYYY-MM-DD') : null;
-}
-
-const propostasRecebidas = await Proposta.findAll({ where: { receiverId: req.session.userId, [Op.or]: [
-    { status: 'pendente' },
-    { status: 'negada' },
-    {status: 'expirada'}
-  ] } });
-
-for (const proposta of propostasRecebidas) {
-    proposta.sender = await User.findOne({ where: { id: proposta.senderId } });
-    proposta.data = proposta.data ? moment(proposta.data).format('YYYY-MM-DD') : null;
-}
-propostasEnviadas.sort((a, b) => {
-    if (a.status === 'pendente' && b.createdAt) {
-      return -1; // 'a' vem antes de 'b'
-    }
-    if (a.status !== 'pendente' && b.createdAt) {
-      return 1;  // 'b' vem antes de 'a'
-    }
-    return 0;  // Mantém a ordem se ambos forem iguais
-  });
-  
-  propostasRecebidas.sort((a, b) => {
-    if (a.status === 'pendente' && b.createdAt) {
-      return -1;
-    }
-    if (a.status !== 'pendente' && b.createdAt) {
-      return 1;
-    }
-    return 0;
-  });
-
-  propostasEnviadas.forEach(prop => {
-
-    if(prop.status == 'pendente'){
-        prop.aval = true 
-}
-    else{
-        prop.aval = false
-    }
-  })
-
-  propostasRecebidas.forEach(prop => {
-
-    if(prop.status == 'pendente'){
-        prop.aval = true 
-}
-    else{
-        prop.aval = false
-    }
-  })
-
-  
-res.render('thoughts/minhasPropostas', { session: req.session, propostasEnviadas, propostasRecebidas });
-        }
-        else{
-            res.redirect('404')
         }
 
-    }
+        let propostasRecebidas = await Proposta.findAll({ where: { receiverId: req.session.userId} });
+
+        for (const proposta of propostasRecebidas) {
+            proposta.sender = await User.findOne({ where: { id: proposta.senderId } });
+            const data = new Date(proposta.data)
+            const dia = String(data.getDate()).padStart(2, '0');
+            const mes = String(data.getMonth() + 1).padStart(2, '0'); // Mês começa em 0
+            const ano = data.getFullYear();
+            proposta.dataFormatada = `${dia}/${mes}/${ano}`;
+        }
+
+        propostasEnviadas.forEach(async prop => {
+            const data = new Date(prop.data)
+            if (data < hoje) {
+                const newProp = {
+                    id : prop.id,
+                    data: prop.data,
+                    hora: prop.hora,
+                    valorHora: prop.valorHora,
+                    mensagem: prop.mensagem,
+                    senderId: prop.senderId,
+                    receiverId: prop.receiverId,
+                    status: 'expirada'
+                }
+                await Proposta.update(newProp,{where:{id:prop.id}})
+                console.log(`Proposta inválida: ${prop.id}`);
+            }
+        })
+
+        propostasRecebidas.forEach(async prop => {
+            const data = new Date(prop.data)
+            if (data < hoje) {
+                const newProp = {
+                    id : prop.id,
+                    data: prop.data,
+                    hora: prop.hora,
+                    valorHora: prop.valorHora,
+                    mensagem: prop.mensagem,
+                    senderId: prop.senderId,
+                    receiverId: prop.receiverId,
+                    status: 'expirada'
+                }
+                await Proposta.update(newProp,{where:{id:prop.id}})
+                console.log(`Proposta inválida: ${prop.id}`);
+            }
+        })
+
+        propostasEnviadas.sort((a, b) => {
+            if (a.status === 'pendente' && b.createdAt) {
+            return -1; // 'a' vem antes de 'b'
+            }
+            if (a.status !== 'pendente' && b.createdAt) {
+            return 1;  // 'b' vem antes de 'a'
+            }
+            return 0;  // Mantém a ordem se ambos forem iguais
+        });
+        
+        propostasRecebidas.sort((a, b) => {
+            // Primeiro, verifica o status
+            if (a.status === 'pendente' && b.status !== 'pendente') {
+                return -1; // 'a' vem antes se for "pendente" e 'b' não for
+            } 
+            if (a.status !== 'pendente' && b.status === 'pendente') {
+                return 1;  // 'b' vem antes se for "pendente" e 'a' não for
+            }
+        
+            // Se ambos forem "pendente" ou ambos não forem, desempate pela data de criação ou atualização
+            const dataA = new Date(a.updatedAt || a.createdAt);
+            const dataB = new Date(b.updatedAt || b.createdAt);
+            
+            // Ordena da mais antiga para a mais recente
+            return dataA - dataB;
+        });
+        
+
+        propostasEnviadas.forEach(prop => {
+
+            if(prop.status == 'pendente'){
+                prop.aval = true 
+        }
+            else{
+                prop.aval = false
+            }
+        })
+
+        propostasRecebidas.forEach(prop => {
+
+            if(prop.status == 'pendente'){
+                prop.aval = true 
+        }
+            else{
+                prop.aval = false
+            }
+        })
+
+        
+        res.render('thoughts/minhasPropostas', { session: req.session, propostasEnviadas, propostasRecebidas,id });
+                }
+                else{
+                    res.redirect('404')
+                }
+
+            }
 
     static async aceitarProposta(req,res){
 
@@ -269,6 +504,26 @@ res.render('thoughts/minhasPropostas', { session: req.session, propostasEnviadas
     else{
         res.redirect('404')
     }
+    }
+
+    static async cadastrarEndereco(req,res){
+
+        const cep = req.body.cep
+        const horaInicio = req.body.hora_abertura
+        const horaFim = req.body.hora_fechamento
+        const apiKey = '18c0f5090b1447a3127a4ec3d2c6d486';
+        fetch(`https://www.cepaberto.com/api/v3/cep?cep=${cep}`, {
+        headers: {
+            Authorization: `Token token=${apiKey}`
+        }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+        })
+        .catch(error => {
+            console.error('Erro ao buscar o endereço:', error);
+        });
     }
 
 }

@@ -17,8 +17,6 @@
         </div>
 
         <div class="col">
-
-          <div class="toast border-info" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="toast-header">
               <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="yellow" class="bi bi-star-half"
                 viewBox="0 0 16 16">
@@ -36,31 +34,9 @@
               <strong class="my-3 text-success" style="margin-left: 230px; font-size: 24px;">4.5/5.0</strong>
               <div class="card border-dark bg-secondary">
 
-                <div class="card-body">
-
-                  <p class="text-white" style="margin-left: 20px; font-size: 24px;">Deixe uma avaliação para o artista:
-                  <div class="input-group">
-                    <div class="rs-select2 js-select-simple select--no-search">
-                      <select class="btn ml-3" name="gender">
-                        <option disabled="disabled" selected="selected">Estrelas
-                        </option>
-                        <option>1</option>
-                        <option>2</option>
-                        <option>3</option>
-                        <option>4</option>
-                        <option>5</option>
-                      </select>
-                      <div class="select-dropdown"></div>
-                    </div>
-                  </div>
-                  </p>
-                  <input class="p-3 border input-group" placeholder="Digite a sua mensagem de avaliação">
-                </div>
                 <a href="#" class="btn btn-primary">Enviar Avaliação</a>
               </div>
             </div>
-          </div>
-
         </div>
 
       </div>
@@ -68,15 +44,38 @@
       <div class="row my-3">
 
         <div class="col">
-          {{#if selfView}}
-            <a href="/thoughts/propostas" class="btn btn-primary">Minhas Propostas</a>
-            <a href="" class="btn btn-primary">Minha Agenda</a>
-          {{else}}
-            {{#if type}}
-              <a href="/thoughts/propostaArtista/{{user.id}}" class="btn btn-primary">Fazer Proposta à Empresa</a>
-              <a href="" class="btn btn-primary">Abrir Conversa</a>
+          {{#if type}}
+            {{#if selfView}}
+              <a href="/thoughts/propostas" class="btn btn-primary">Minhas Propostas</a>
+              <button class="btn btn-primary" onclick="toggleForm()">Cadastrar Endereço</button>
+              <a href="" class="btn btn-primary">Cadastrar Evento</a>
+
+              <div id="myForm" style="display: none; margin-top: 10px; width: 100%">
+                  <form action="/thoughts/cadastrarEndereco" method="POST" style="border: 1px solid #ccc; padding: 20px; width: 300px;">
+                      <label for="cep">CEP:</label><br>
+                      <input type="number" id="cep" name="cep" placeholder="Digite o CEP sem pontos ou traços" required><br><br>
+
+                      <label for="hora_abertura">Horário de abertura:</label>
+                      <input type="time" id="hora_abertura" name="hora_abertura" ><br><br>
+                      
+                      <label for="hora_fechamento">Horário de fechamento:</label>
+                      <input type="time" id="hora_fechamento" name="hora_fechamento" ><br><br>
+
+                      <input type="submit" value="Enviar">
+                  </form>
+                </div>
+              
             {{else}}
-              <a href="/thoughts/propostaEmpresa/{{user.id}}" class="btn btn-primary">Fazer Proposta ao Artista</a>
+              <a href="/thoughts/propostaEmpresa/{{user.id}}" class="btn btn-primary">Fazer Proposta à Empresa</a>
+              <a href="" class="btn btn-primary">Abrir Conversa</a>
+            {{/if}}
+          {{else}}
+            {{#if selfView}}
+              <a href="/thoughts/propostas" class="btn btn-primary">Minhas Propostas</a>
+              <a href="" class="btn btn-primary">Cadastrar Musica</a>
+              <a href="" class="btn btn-primary">Cadastrar Talento Musical</a>
+            {{else}}
+              <a href="/thoughts/propostaEmpresa/{{user.id}}" class="btn btn-primary">Fazer Proposta ao(a) Artista</a>
               <a href="" class="btn btn-primary">Abrir Conversa</a>
             {{/if}}
           {{/if}}
@@ -242,3 +241,15 @@
 </body>
 
 </html>
+
+    <script>
+    // Função para mostrar/esconder o formulário
+    function toggleForm() {
+        const form = document.getElementById('myForm');
+        if (form.style.display === 'none' || form.style.display === '') {
+            form.style.display = 'block'; // Mostra o formulário
+        } else {
+            form.style.display = 'none'; // Esconde o formulário
+        }
+    }
+</script>

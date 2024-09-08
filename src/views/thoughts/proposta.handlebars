@@ -76,8 +76,43 @@
             <label for="mensagem">Mensagem:</label>
             <textarea id="mensagem" name="mensagem" placeholder="Mensagem adicional (opcional)" rows="4"></textarea>
 
+            {{#if enderecoAllowed}}
+                <label for="endereco">Endereço:</label>
+                <input type="text" id="endereco" name="endereco" placeholder="Local do evento" required>
+                 <ul id="suggestions" style="list-style-type: none; padding: 0;"></ul>
+            {{/if}}
             <input type="submit" value="Enviar Proposta">
         </form>
     </div>
-
 </div>
+
+<script>
+const input = document.getElementById('endereco');
+const suggestionsList = document.getElementById('suggestions');
+
+// Função para lidar com a entrada do usuário
+input.addEventListener('input', async function() {
+    const query = input.value;
+    
+    if (query.length > 0) {
+        const suggestions = await fetch(`/loadEnderecos`);
+        suggestionsList.innerHTML = ''; // Limpa sugestões anteriores
+
+        suggestions.forEach(suggestion => {
+            const li = document.createElement('li');
+            li.textContent = suggestion;
+            li.style.cursor = 'pointer';
+
+            // Seleciona a sugestão clicada e coloca no input
+            li.addEventListener('click', () => {
+                input.value = suggestion;
+                suggestionsList.innerHTML = ''; // Limpa as sugestões após escolher
+            });
+
+            suggestionsList.appendChild(li);
+        });
+    } else {
+        suggestionsList.innerHTML = ''; // Limpa sugestões se o input estiver vazio
+    }
+})
+</script>

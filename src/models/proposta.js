@@ -11,6 +11,10 @@ const Proposta = db.define('Proposta', {
         type: DataTypes.TIME,
         require: true,
     },
+    local: {
+        type: DataTypes.STRING,
+        require: false,
+    },
     valorHora: {
         type: DataTypes.FLOAT,
         require: true,

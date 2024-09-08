@@ -17,7 +17,8 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 router.get('/dashboard', ThoughtsController.dashboard)
-router.get('/profile',ThoughtsController.viewProfile)
+router.get('/dashboard/:id', ThoughtsController.dashboardFail)
+router.get('/profile/:id',ThoughtsController.viewProfile)
 router.get('/profile/:id',ThoughtsController.viewUserProfileById)
 router.get('/propostaArtista/:id',ThoughtsController.viewPropostaArtistaById)
 router.get('/propostaEmpresa/:id',ThoughtsController.viewPropostaEmpresaById)
@@ -25,6 +26,7 @@ router.post('/proposta/:senderId/:receiverId',ThoughtsController.propostaPost)
 router.get('/aceitarProposta/:id',ThoughtsController.aceitarProposta)
 router.get('/negarProposta/:id',ThoughtsController.negarProposta)
 router.get('/404',ThoughtsController.load404)
+router.post('/cadastrarEndereco',ThoughtsController.cadastrarEndereco)
 router.get('/propostas',ThoughtsController.viewPropostas)
 
 module.exports = router 

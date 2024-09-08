@@ -10,18 +10,16 @@ const { redirect } = require('statuses')
 module.exports = class AuthController{
 
     static async login(req,res){
+        console.log(req.session.userId)
         if(!req.session.userId){
             req.session.userId = 0
         }
-        console.log(req.session.userId)
         res.render('auth/login')
     }
 
     static async loginPost(req,res){
         
         const {email, password} = req.body
-
-        console.log(req.body)
 
         const user = await User.findOne({where: {email:email}})
 
@@ -52,7 +50,7 @@ module.exports = class AuthController{
             req.flash('message', 'autenticação realizada com sucesso!')
             req.session.save(() => {
                 
-                res.redirect('/thoughts/dashboard')
+                res.redirect(`/thoughts/dashboard/${req.session.userId}`)
             })
         }
         }
