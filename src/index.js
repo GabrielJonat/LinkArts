@@ -64,11 +64,13 @@ app.use(flash());
 app.use(express.static('public'));
 
 app.use((req, res, next) => {
-    if (req.session.userId) {
-        res.locals.session = req.session;
-    }
-    next();
+  if (req.session.userId) {
+      res.locals.session = req.session;
+  }
+  next();
 });
+
+
 
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -78,6 +80,11 @@ app.get('/', AuthController.login);
 app.get('/thoughts/login', async (req,res) => {
   
   res.render('auth/login')
+})
+app.get('/auth/logout', async (req,res) => {
+  
+  req.session.destroy()
+  res.redirect('/login')
 })
 app.get('/sendCode/:email', async (req, res) => {
 
@@ -223,11 +230,15 @@ app.post('/messages', async (req, res) => {
     await Message.create(req.body)
   });
 
-  app.get('/loadEnderecos',async (req,res) => {
-    // Aqui você faria a chamada ao banco de dados para buscar as opções
-    // Simulação de resultados com base no que o usuário digitar
-    const response = await Local.findAll({where: {UserId:req.session.userId}})  
-    return response
+  app.get('/loadEnderecos/:id',async (req,res) => {
+    const id = req.params.id
+    let update = ''
+    const response = await Local.findAll({where: {UserId:id}})
+    response.forEach(end => {
+
+      update += `<option>${end.endereco}</option> `
+    })
+    res.send(update)
 })
 
 conn.sync()

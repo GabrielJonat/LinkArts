@@ -5,7 +5,8 @@ const { where } = require('sequelize')
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const { use } = require('../routes/thoughtsRoutes')
-const { redirect } = require('statuses')
+const { redirect } = require('statuses');
+const session = require('express-session');
 
 module.exports = class AuthController{
 
@@ -14,7 +15,7 @@ module.exports = class AuthController{
         if(!req.session.userId){
             req.session.userId = 0
         }
-        res.render('auth/login')
+        res.render('auth/login', {session: req.session})
     }
 
     static async loginPost(req,res){
@@ -23,8 +24,10 @@ module.exports = class AuthController{
 
         const user = await User.findOne({where: {email:email}})
 
-        if(!user){
+        if(!user || user == null){
 
+            
+            console.log('não cadastrado!')
             req.flash('message', 'O email informado não está cadastrado')
             req.session.save(() => {
 
@@ -100,7 +103,7 @@ module.exports = class AuthController{
         const cpf = await response2.json();
         const cnpj = await response3.json();
         console.log(cpf,cnpj)
-        if((accountType == 'Empresa' && response2.valid) || (accountType == 'Artista' && response3.valid)){
+        if((accountType == 'Empresa' && cpf.valid) || (accountType == 'Artista' && cnpj.valid)){
 
             req.flash('message', 'CPF/CNPJ inválido')
             res.render('auth/register')

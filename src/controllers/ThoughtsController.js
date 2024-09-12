@@ -70,7 +70,7 @@ module.exports = class ThoughtController{
             }
         
             // Formata a data corretamente para exibir
-            const dia = String(data.getDate()).padStart(2, '0');
+            const dia = String(data.getDate() + 1).padStart(2, '0');
             const mes = String(data.getMonth() + 1).padStart(2, '0'); // Mês começa em 0
             const ano = data.getFullYear();
             prop.dataFormatada = `${dia}/${mes}/${ano}`;
@@ -184,7 +184,7 @@ module.exports = class ThoughtController{
             }
         
             // Formata a data corretamente para exibir
-            const dia = String(data.getDate()).padStart(2, '0');
+            const dia = String(data.getDate() + 1).padStart(2, '0');
             const mes = String(data.getMonth() + 1).padStart(2, '0'); // Mês começa em 0
             const ano = data.getFullYear();
             prop.dataFormatada = `${dia}/${mes}/${ano}`;
@@ -228,7 +228,6 @@ module.exports = class ThoughtController{
             // Mantém a ordem se todas as comparações resultarem em empate
             return 0;
         });
-        console.log(isEmpresa)
         res.render('thoughts/dashboard', {session: req.session, user,connections,propostas,isEmpresa:isEmpresa})}
         else{
 
@@ -245,9 +244,15 @@ module.exports = class ThoughtController{
 
     static async viewProfile(req,res){
 
-        let selfView = true
+        let selfView
+        const id = req.session.userId
+        if(req.params.id == id){
+            selfView = true
+        }
+        else{
+            selfView = false
+        }
         const user = await User.findOne({where: {id:req.params.id}})
-        req.session.userId = req.params.id
         let type
         if(user.accountType === 'Empresa'){
             type = 1
@@ -255,29 +260,40 @@ module.exports = class ThoughtController{
         else{
             type = 0
         }
-        res.render('thoughts/profile', {session: req.session,user,selfView,type})  
+        res.render('thoughts/profile', {session: req.session,user,selfView,type,id})  
     }
 
     static async viewPropostaArtistaById(req,res){
 
+        if(req.session.userId){
         const id = req.params.id
         const empresa = await User.findOne({where: {id:id}})
         const user = await User.findOne({where: {id:req.session.userId}})
         const sender = user
         const receiver = empresa
         let enderecoAllowed = false
-        res.render('thoughts/proposta', {session: req.session,empresa,sender,receiver,enderecoAllowed})        
+        res.render('thoughts/proposta', {session: req.session,empresa,sender,receiver,enderecoAllowed})   
+        }    
+        else{
+            res.render('thoughts/404', {session: req.session})
+        } 
     }
 
     static async viewPropostaEmpresaById(req,res){
 
+        if(req.session.userId){
         const id = req.params.id
         const empresa = await User.findOne({where: {id:req.session.userId}})
         const user = await User.findOne({where: {id:id}})
         const sender = empresa
         const receiver = user
         let enderecoAllowed = true
-        res.render('thoughts/proposta', {session: req.session,empresa,sender,receiver,enderecoAllowed})        
+        res.render('thoughts/proposta', {session: req.session,empresa,sender,receiver,enderecoAllowed})
+        }
+        else{
+            res.render('thoughts/404', {session: req.session})
+        }
+
     }
 
     static async viewUserProfileById(req,res){
@@ -309,6 +325,15 @@ module.exports = class ThoughtController{
             receiverId:  receiverId,
             status: 'pendente'
         }
+        if(proposta.local == 'Selecione uma opção' || !proposta.data || !proposta.hora || !proposta.valorHora){
+            req.flash('message', 'Selecione um endereço válido.')
+                req.session.save(() => {
+
+                    res.redirect('/thoughts/dashboard/')
+                    return 
+    })
+        }
+        else{
         const hoje = new Date()
         const data = new Date(proposta.data)
         if(data < hoje){
@@ -327,7 +352,7 @@ module.exports = class ThoughtController{
                 req.session.save(() => {
 
                     res.redirect('/thoughts/dashboard')    
-    })}
+    })}}
 }
 
     static async viewPropostas(req,res){
@@ -344,7 +369,7 @@ module.exports = class ThoughtController{
             proposta.receiver = await User.findOne({ where: { id: proposta.receiverId } });
             // Formata a data corretamente para exibir
             const data = new Date(proposta.data)
-            const dia = String(data.getDate()).padStart(2, '0');
+            const dia = String(data.getDate() + 1).padStart(2, '0');
             const mes = String(data.getMonth() + 1).padStart(2, '0'); // Mês começa em 0
             const ano = data.getFullYear();
             proposta.dataFormatada = `${dia}/${mes}/${ano}`;
@@ -356,7 +381,7 @@ module.exports = class ThoughtController{
         for (const proposta of propostasRecebidas) {
             proposta.sender = await User.findOne({ where: { id: proposta.senderId } });
             const data = new Date(proposta.data)
-            const dia = String(data.getDate()).padStart(2, '0');
+            const dia = String(data.getDate() + 1).padStart(2, '0');
             const mes = String(data.getMonth() + 1).padStart(2, '0'); // Mês começa em 0
             const ano = data.getFullYear();
             proposta.dataFormatada = `${dia}/${mes}/${ano}`;
@@ -434,6 +459,7 @@ module.exports = class ThoughtController{
             else{
                 prop.aval = false
             }
+            console.log(prop.data)
         })
 
         propostasRecebidas.forEach(prop => {
@@ -444,6 +470,7 @@ module.exports = class ThoughtController{
             else{
                 prop.aval = false
             }
+            console.log(prop.data)
         })
 
         
@@ -511,19 +538,32 @@ module.exports = class ThoughtController{
         const cep = req.body.cep
         const horaInicio = req.body.hora_abertura
         const horaFim = req.body.hora_fechamento
+        const local = {}
         const apiKey = '18c0f5090b1447a3127a4ec3d2c6d486';
-        fetch(`https://www.cepaberto.com/api/v3/cep?cep=${cep}`, {
-        headers: {
-            Authorization: `Token token=${apiKey}`
+        try {
+            const response = await fetch(`https://www.cepaberto.com/api/v3/cep?cep=${cep}`,{headers: {Authorization: `Token token=${apiKey}`}});  // ou outra função que retorna uma promessa
+            const data = await response.json();
+            const endereco = data.logradouro + ', ' + data.bairro + ', ' + data.cidade.nome;
+            
+            console.log(endereco);  // Agora 'endereco' estará definido corretamente
+        
+            local.endereco = endereco;
+            local.horaInicio = horaInicio;
+            local.horaFim = horaFim;
+            local.UserId = req.session.userId   
+            
+            console.log(local, endereco);
+            await Local.create(local);  // Aguarda o Local ser criado no banco de dados
+            req.flash('message', 'Endereço cadastrado com sucesso.');
+            req.session.save(() => {
+                res.redirect(`/thoughts/profile/${req.session.userId}`);
+            });
+        } catch (error) {
+            req.flash('message', 'Erro ao buscar endereço.');
+            req.session.save(() => {
+                res.redirect(`/thoughts/profile/${req.session.userId}`);
+            });
         }
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log(data);
-        })
-        .catch(error => {
-            console.error('Erro ao buscar o endereço:', error);
-        });
+        
     }
-
 }

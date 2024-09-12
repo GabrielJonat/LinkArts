@@ -62,6 +62,7 @@
 <div class="body">
 
     <div class="form-container">
+         <a href="/thoughts/dashboard">Voltar</a>
         <h2>Proposta para Tocar em {{empresa.name}}</h2>
         <form action="/thoughts/proposta/{{sender.id}}/{{receiver.id}}" method="POST">
             <label for="data_evento">Data do Evento:</label>
@@ -76,43 +77,21 @@
             <label for="mensagem">Mensagem:</label>
             <textarea id="mensagem" name="mensagem" placeholder="Mensagem adicional (opcional)" rows="4"></textarea>
 
-            {{#if enderecoAllowed}}
-                <label for="endereco">Endereço:</label>
-                <input type="text" id="endereco" name="endereco" placeholder="Local do evento" required>
-                 <ul id="suggestions" style="list-style-type: none; padding: 0;"></ul>
-            {{/if}}
+            <select id="endereco" name="endereco" class="form-control" class="form-control"  style="margin-bottom: 1em;" onmousemove="loadEnderecos({{empresa.id}})">
+                <option >Selecione uma opção</option>
+            </select required>
+
             <input type="submit" value="Enviar Proposta">
         </form>
     </div>
 </div>
 
 <script>
-const input = document.getElementById('endereco');
-const suggestionsList = document.getElementById('suggestions');
-
-// Função para lidar com a entrada do usuário
-input.addEventListener('input', async function() {
-    const query = input.value;
-    
-    if (query.length > 0) {
-        const suggestions = await fetch(`/loadEnderecos`);
-        suggestionsList.innerHTML = ''; // Limpa sugestões anteriores
-
-        suggestions.forEach(suggestion => {
-            const li = document.createElement('li');
-            li.textContent = suggestion;
-            li.style.cursor = 'pointer';
-
-            // Seleciona a sugestão clicada e coloca no input
-            li.addEventListener('click', () => {
-                input.value = suggestion;
-                suggestionsList.innerHTML = ''; // Limpa as sugestões após escolher
-            });
-
-            suggestionsList.appendChild(li);
-        });
-    } else {
-        suggestionsList.innerHTML = ''; // Limpa sugestões se o input estiver vazio
+    async function loadEnderecos(id){
+    const endereco = document.getElementById('endereco');
+    const selectedEndereco = endereco.options[endereco.selectedIndex].text;
+    const enderecos = await fetch(`/loadEnderecos/${id}`);
+    const response = await enderecos.text();
+    endereco.innerHTML = response;
     }
-})
 </script>

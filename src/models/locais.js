@@ -2,7 +2,7 @@ const { DataTypes } = require('sequelize')
 const db = require('../db/conn')
 const User = require('./user')
 
-const Local = db.define('Locias', {
+const Local = db.define('Locais', {
     endereco: {
         type: DataTypes.STRING,
         require: false,
@@ -14,10 +14,11 @@ const Local = db.define('Locias', {
     horaFim: {
         type: DataTypes.TIME,
         
-    }
+    },
+    UserId: {
+        type: DataTypes.BIGINT,
+        require: true
+    },
 })
-
-Local.hasOne(User)
-User.hasMany(Local)
 
 module.exports = Local
