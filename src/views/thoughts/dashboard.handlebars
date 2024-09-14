@@ -3,7 +3,7 @@
     <div class="container">
 
       <div class="row text-center text-success">
-        <h2 style="font-size: 40px;">Bem vindo(a) de Volta <strong>{{user.name}}</strong>!</h2>
+        <h2 style="font-size: 40px;">Bem vindo(a) de Volta<strong>{{user.name}}</strong>!</h2>
       </div>
       <div class="row my-5">
 
@@ -25,7 +25,7 @@
 
         <div class="col">
           {{#if session.userId}}
-          <a href="/thoughts/profile/{{user.id}}"><img src="{{user.img}}" style="border-radius: 50%; width: 120px; height: auto; margin-left: 20em;"></a>
+          <a href="/thoughts/profile"><img src="{{user.img}}" style="border-radius: 50%; width: 120px; height: auto; margin-left: 20em;"></a>
                 {{/if}}
         </div>
 
@@ -39,10 +39,10 @@
           <div class="bg-secondary text-white my-3 text-center card" style="height: 40em;">
             <ul class="list-group nav-pills nav-stacked" style="height: 100%; overflow-y: scroll;">
               {{#each connections}}
-                <li class="list-group-item active nav-item" aria-current="true"><a href="/thoughts/profile/{{this.id}}"><img
+                <li class="list-group-item active nav-item" aria-current="true"><a href="/thoughts/profile/{{this.id}}/{{this.requester}}"><img
                       src="{{this.img}}" alt="Foto de Perfil" class="img-fluid mt-1"
                       style="width: auto; margin-top: 200px; height: 80px; border-radius: 50%; margin-right: 200px;"></a>
-                  <a class="text-white" href="/thoughts/profile/{{this.id}}"><b
+                  <a class="text-white" href="/thoughts/profile/{{this.id}}/{{this.requester}}"><b
                       style="font-size: 20px; margin-right: 45px;">{{this.name}}</b></a>
                   <div class="progress" style="margin-left: 40%;" role="progressbar" aria-label="Basic example"
                     aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
@@ -66,13 +66,13 @@
               {{#each propostas}}
                 
                   <li class="list-group-item nav-item" style="font-size: 20px;"><a class="nav-link"
-                      href="">data: {{this.dataFormatada}}<br>hora: {{this.hora}}<br>local: {{this.local}}<br>valor/hora: {{this.valorHora}}<br>nome do(a) Artista: {{this.empresa.name}}<br>email: {{this.empresa.email}}</a>
+                      href="">data: {{this.dataFormatada}}<br>hora de início: {{this.horaInicial}}<br>hora fim: {{this.horaFim}}<br>local: {{this.local}}<br>valor: R${{this.valorFinal}}<br>nome do(a) Artista: {{this.empresa.name}}<br>email: {{this.empresa.email}}</a>
                   </li>
                 {{/each}}
                 {{else}}
                   {{#each propostas}}
                   <li class="list-group-item nav-item" style="font-size: 20px;"><a class="nav-link"
-                      href="">data: {{this.dataFormatada}}<br>hora: {{this.hora}}<br>local: {{this.local}}<br>valor/hora: {{this.valorHora}}<br>nome/Razão Social: {{this.empresa.name}}<br>email: {{this.empresa.email}}</a>
+                      href="">data: {{this.dataFormatada}}<br>hora de início: {{this.horaInicial}}<br>hora fim: {{this.horaFim}}<br>local: {{this.local}}<br>valor: R${{this.valorFinal}}<br>nome/Razão Social: {{this.empresa.name}}<br>email: {{this.empresa.email}}</a>
                   </li>
                   {{/each}}
                 {{/if}}

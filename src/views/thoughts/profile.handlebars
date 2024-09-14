@@ -1,4 +1,4 @@
-  <main class="my-3">
+<main class="my-3"></main>
 
     <div class="container">
 
@@ -51,7 +51,7 @@
         <div class="col">
           {{#if type}}
             {{#if selfView}}
-              <a href="/thoughts/propostas" class="btn btn-primary">Minhas Propostas</a>
+              <a href="/thoughts/propostas/{{id}}" class="btn btn-primary">Minhas Propostas</a>
               <button class="btn btn-primary" onclick="toggleForm()">Cadastrar Endereço</button>
               <a href="" class="btn btn-primary">Cadastrar Evento</a>
 
@@ -76,7 +76,7 @@
             {{/if}}
           {{else}}
             {{#if selfView}}
-              <a href="/thoughts/propostas" class="btn btn-primary">Minhas Propostas</a>
+              <a href="/thoughts/propostas/{{id}}" class="btn btn-primary">Minhas Propostas</a>
               <a href="" class="btn btn-primary">Cadastrar Musica</a>
               <a href="" class="btn btn-primary">Cadastrar Talento Musical</a>
             {{else}}
@@ -175,13 +175,66 @@
 
           </div>
 
-          <button class="btn btn-success">Adicionar como favorito</button>
+        {{#if selfView}}
+    
+        {{else}}
+            <a class="btn btn-success" href="/thoughts/favoritar/{{id}}/{{user.id}}">Adicionar como favorito</a>
+        {{/if}}
 
         </div>
 
         <div class="col my-3">
 
+          {{#if type}}
           <div class="card my-3 bg-secondary border-dark" style="margin-left: 85px; width: 500px;">
+
+            <div class="card-body">
+
+              <h1 class="text-white" style="margin-left: 170px; font-size: 24px;">Eventos</h1>
+
+              <ul class="list-group nav-pills nav-stacked bg-info my-3" style="height: 240px; overflow-y: scroll;">
+                <li class="list-group-item nav-item" style="font-size: 20px; background-color: #17a2b8;"><a
+                    class="nav-link" href="MusicaScreenCorp.html"
+                    style=" margin-left: 70px; color: white; font-size: 24px;"><strong>Ultimate Christmas</strong></li>
+                <li class="list-group-item nav-item" style="font-size: 20px; background-color: #17a2b8;"><a
+                    class="nav-link" href="MusicaScreenCorp.html"
+                    style=" margin-left: 70px; color: white; font-size: 24px;"><strong>World
+                      On a String</strong></li>
+                <li class="list-group-item nav-item" style="font-size: 20px; background-color: #17a2b8;"><a
+                    class="nav-link" href="MusicaScreenCorp.html"
+                    style=" margin-left: 130px; color: white; font-size: 24px;"><strong>London</strong></li>
+                <li class="list-group-item nav-item" style="font-size: 20px; background-color: #17a2b8;"><a
+                    class="nav-link" href="MusicaScreenCorp.html"
+                    style=" margin-left: 100px; color: white; font-size: 24px;"><strong>A
+                      Voice On Air</strong></li>
+              </ul>
+
+            </div>
+
+          </div>
+
+          <div class="card my-3 bg-secondary border-dark" style="margin-left: 85px; width: 500px;">
+
+            <div class="card-body">
+
+              <h1 class="text-white" style="margin-left: 170px; font-size: 24px;">Endereços</h1>
+              <ul class="list-group nav-pills nav-stacked bg-info my-3" style="height: 240px; overflow-y: scroll;">
+                {{#each locais}}
+                <li class="list-group-item nav-item" style="font-size: 20px; background-color: #17a2b8;"><a
+                    class="nav-link" href="MusicaScreenCorp.html"
+                    style=" margin-left: 70px; color: white; font-size: 24px;"><strong>{{this.endereco}}</strong>
+                    <br><p>Abre: {{this.horaInicio}}</p>
+                    <br><p>Fecha: {{this.horaFim}}</p></li>
+                {{/each}}
+              </ul>
+    
+            </div>
+
+          </div>
+
+          {{else}}
+
+            <div class="card my-3 bg-secondary border-dark" style="margin-left: 85px; width: 500px;">
 
             <div class="card-body">
 
@@ -207,6 +260,7 @@
             </div>
 
           </div>
+          {{/if}}
 
           <h1 class="text-dark" style="font-size: 30px;;">Redes Sociais:</h1>
 

@@ -86,6 +86,12 @@ app.get('/auth/logout', async (req,res) => {
   req.session.destroy()
   res.redirect('/login')
 })
+app.get('/clear', (req, res) => {
+  req.flash('message', ''); // Limpa a mensagem
+  req.session.save(() => {
+      res.json({ success: true });
+  });
+});
 app.get('/sendCode/:email', async (req, res) => {
 
   console.log('Iniciando processo de reset de senha...')
