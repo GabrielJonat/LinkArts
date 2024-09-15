@@ -20,6 +20,7 @@ const { finished } = require('stream');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const AuthController = require('./controllers/AuthController');
+const Proposta = require('./models/proposta');
 const transporter = nodemailer.createTransport({
   service: 'Gmail',
   auth: {
@@ -245,6 +246,25 @@ app.post('/messages', async (req, res) => {
       update += `<option>${end.endereco}</option> `
     })
     res.send(update)
+})
+
+app.get('/loadServicos/:avaliador/:avaliado',async (req,res) => {
+  const avaliador = req.params.avaliador
+  const avaliado = req.params.avaliado
+  let update = ''
+  const servicos = await Proposta.findAll({ where: { [Op.or]: [
+    { senderId: avaliador, receiverId: avaliado },
+    { senderId: avaliado, receiverId: avaliador }
+], status: 'concluida' } })
+  servicos.forEach(item => {
+
+    const dia = String(item.data.getDate()).padStart(2, '0');
+            const mes = String(item.data.getMonth() + 1).padStart(2, '0'); // Mês começa em 0
+            const ano = item.data.getFullYear();
+            item.dataFormatada = `${dia}/${mes}/${ano}`;
+    update += `<option>${item.senderId};${item.receiverId};${item.horaInicial};${item.local};${item.dataFormatada}<span style="text-color: #fff;">;${item.data}</span></option> `
+  })
+  res.send(update)
 })
 
 conn.sync()

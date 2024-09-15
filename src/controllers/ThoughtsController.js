@@ -8,6 +8,7 @@ const Proposta = require('../models/proposta')
 const moment = require('moment');
 const Local = require('../models/locais')
 const Fav = require('../models/favoritos')
+const Aval = require('../models/avaliacao')
 
 function converterParaMinutos(horario) {
     if (!horario) return null; // Adicionado para lidar com valores undefined
@@ -199,6 +200,14 @@ module.exports = class ThoughtController{
         const id = req.session.userId
         const locais = await Local.findAll({where:{UserId:id}})
         const user = await User.findOne({where: {id:id}})
+        const avaliacoes = await Aval.findAll({where: {avaliado: id}})
+        let media = 0
+        avaliacoes.forEach(aval => {
+
+            media += aval.nota
+        })
+        media = media / avaliacoes.length
+        let porcentagem = media / 5 * 100
         let type
         if(user.accountType === 'Empresa'){
             type = 1
@@ -206,7 +215,29 @@ module.exports = class ThoughtController{
         else{
             type = 0
         }
-        res.render('thoughts/profile', {session: req.session,user,selfView,type,id,locais})
+        res.render('thoughts/profile', {session: req.session,user,selfView,type,id,locais, media,porcentagem})
+        }
+        else{
+            res.redirect('404')
+        }  
+    }
+
+    static async viewAvaliacoes(req,res){
+
+        if(req.session.userId){
+        const id = req.params.id
+        const requesterId = req.params.requester
+        const avaliacoes = await Aval.findAll({where: {avaliado: id}})
+        avaliacoes.forEach(async aval => {
+            aval.perfil = await User.findOne({where: {id: aval.avaliador}})
+            const data = new Date(aval.createdAt)
+            const dia = String(data.getDate() + 1).padStart(2, '0');
+            const mes = String(data.getMonth() + 1).padStart(2, '0'); // Mês começa em 0
+            const ano = data.getFullYear();
+            aval.data = `${dia}/${mes}/${ano}`;
+            aval.requesterId = requesterId
+        })
+        res.render('thoughts/avaliacoes', {session: req.session,id,requesterId,avaliacoes})
         }
         else{
             res.redirect('404')
@@ -253,6 +284,14 @@ module.exports = class ThoughtController{
         const user = await User.findOne({where: {id:searched}})
         let type
         const locais = await Local.findAll({where:{UserId:searched}})
+        const avaliacoes = await Aval.findAll({where: {avaliado: searched}})
+        let media = 0
+        avaliacoes.forEach(aval => {
+
+            media += aval.nota
+        })
+        media = media / avaliacoes.length
+        let porcentagem = media / 5 * 100
         if(user.accountType === 'Empresa'){
             type = 1
         }
@@ -260,7 +299,7 @@ module.exports = class ThoughtController{
             type = 0
         }
         let selfView = false
-        res.render('thoughts/profile', {session: req.session,user,type,selfView,locais,id})        
+        res.render('thoughts/profile', {session: req.session,user,type,selfView,locais,id,media,porcentagem})        
     }
 
     static async propostaPost(req, res) {
@@ -636,6 +675,62 @@ module.exports = class ThoughtController{
             })
             res.render(`thoughts/favoritos`, {session: req.session, favoritos,detentor});
     }
+    else{
+        res.redirect('404')
+    }
+        
+    }
+
+    static async avaliar(req,res){
+
+        if(req.session.userId){
+        
+            const avaliador = req.params.avaliador
+            const avaliado = req.params.avaliado
+            let valid = true
+            let msg
+            if (req.body.servico === 'Selecione uma opção') {
+                
+                valid = false
+                msg = 'Selecione um serviço válido'
+            }
+            else{
+                const conteudo = req.body.conteudo
+                const nota = req.body.nota
+                const detalhesServico = req.body.servico.split(';')
+                const servico = await Proposta.findOne({where: {senderId: detalhesServico[0], receiverId: detalhesServico[1], horaInicial: detalhesServico[2], data: detalhesServico[5]}})
+                const avaliacao = {
+                    conteudo: conteudo,
+                    nota: nota,
+                    servico: servico.id,
+                    avaliador: avaliador,
+                    avaliado: avaliado
+                }
+                const avalExists = await Aval.findOne({where: {servico: servico.id,avaliador: avaliador}})
+                if(avalExists){
+
+                    valid = false
+                    msg = "Já existe uma avaliação registrada para este servço"
+                }
+                if(valid){
+                await Aval.create(avaliacao)
+                    req.flash('message','')
+                    req.flash('message','Avaliação Enviada com sucesso!')
+                    req.session.save(() => {
+                        res.redirect(`/thoughts/profile/${avaliado}/${avaliador}`);
+                    });
+                }
+                else{
+
+                    req.flash('message','')
+                    req.flash('message',msg)
+                    req.session.save(() => {
+                    res.redirect(`/thoughts/profile/${avaliado}/${avaliador}`);
+                });
+                }
+    
+            }            
+        }
     else{
         res.redirect('404')
     }
