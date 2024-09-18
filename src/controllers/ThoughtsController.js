@@ -1,5 +1,6 @@
 const User = require('../models/user')
 const Talk = require('../models/talk')
+const musicalTalent = require('../models/musicalTalents')
 const session = require('express-session')
 const axios = require('axios')
 const { use } = require('../routes/thoughtsRoutes')
@@ -9,6 +10,8 @@ const moment = require('moment');
 const Local = require('../models/locais')
 const Fav = require('../models/favoritos')
 const Aval = require('../models/avaliacao')
+const Evento = require('../models/eventos')
+const Tag = require('../models/Tag')
 
 function converterParaMinutos(horario) {
     if (!horario) return null; // Adicionado para lidar com valores undefined
@@ -71,9 +74,19 @@ module.exports = class ThoughtController{
             isEmpresa = false
             connections = await User.findAll({where: {accountType:'Empresa'}})
         }
-        connections.forEach(conn => {
+        connections.forEach(async conn => {
 
             conn.requester = requester
+            const avaliacoes = await Aval.findAll({where: {avaliado: conn.id}})
+            let media = 0
+            avaliacoes.forEach(aval => {
+
+            media += aval.nota
+            })
+            media = media / avaliacoes.length
+            let porcentagem = media / 5 * 100
+            conn.media = media
+            conn.porcentagem = porcentagem
         })
        let propostas = await Proposta.findAll({
             where: {
@@ -199,8 +212,31 @@ module.exports = class ThoughtController{
         let selfView = true
         const id = req.session.userId
         const locais = await Local.findAll({where:{UserId:id}})
+        const eventos = await Evento.findAll({where: {owner: id}})
         const user = await User.findOne({where: {id:id}})
+        const tags = await Tag.findAll({where: {UserId: id}})
+        let hasTags = true
+        if(!tags){
+            hasTags = false
+        }
         const avaliacoes = await Aval.findAll({where: {avaliado: id}})
+        tags.forEach(async tag => {
+
+            tag.talent = await musicalTalent.findOne({where: {id:tag.codMusicalTalent}})
+            if(tag.talent.categoria == 'Instrumento'){
+                tag.instrumento = true
+            }
+            else{
+                tag.talent.instrumento = false
+            }
+
+            if(tag.talent.categoria == 'Gênero Musical'){
+                tag.genero = true
+            }
+            else{
+                tag.genero = false
+            }
+        })
         let media = 0
         avaliacoes.forEach(aval => {
 
@@ -215,7 +251,7 @@ module.exports = class ThoughtController{
         else{
             type = 0
         }
-        res.render('thoughts/profile', {session: req.session,user,selfView,type,id,locais, media,porcentagem})
+        res.render('thoughts/profile', {session: req.session,user,selfView,type,id,locais, media,porcentagem,eventos,tags,hasTags})
         }
         else{
             res.redirect('404')
@@ -282,6 +318,7 @@ module.exports = class ThoughtController{
         let searched = req.params.id
         const id = req.params.requester
         const user = await User.findOne({where: {id:searched}})
+        const eventos = await Evento.findAll({where: {owner: searched}})
         let type
         const locais = await Local.findAll({where:{UserId:searched}})
         const avaliacoes = await Aval.findAll({where: {avaliado: searched}})
@@ -299,7 +336,7 @@ module.exports = class ThoughtController{
             type = 0
         }
         let selfView = false
-        res.render('thoughts/profile', {session: req.session,user,type,selfView,locais,id,media,porcentagem})        
+        res.render('thoughts/profile', {session: req.session,user,type,selfView,locais,id,media,porcentagem,eventos})        
     }
 
     static async propostaPost(req, res) {
@@ -735,6 +772,76 @@ module.exports = class ThoughtController{
         res.redirect('404')
     }
         
+    }
+
+    static async cadastrarEvento(req, res) {
+        const id = req.params.id;
+
+        const eventoExists = false
+
+        if(eventoExists || !req.file){
+            
+            req.flash('message', 'Evento já cadastrado!');
+            req.session.save(() => {
+                res.redirect(`/thoughts/profile`);
+            });
+        }
+        else{
+            
+            const evento = {
+                data: req.body.data,
+                horaInicial: req.body.horaInicial + ':00',
+                horaFim: req.body.horaFim + ':00',
+                local: req.body.endereco,
+                img: req.file.filename,
+                nome: req.body.nome,
+                descricao: req.body.descricao,
+                owner: id
+            };  
+        
+            await Evento.create(evento)
+            req.flash('message', 'Evento cadastrado com sucesso!');
+            req.session.save(() => {
+                res.redirect(`/thoughts/profile`);
+            });
+        }
+    }
+
+    static async cadastrarTag(req, res) {
+
+        req.session.userId = req.params.id
+        const instrumentosCorda = await musicalTalent.findAll({where: {categoria:'Instrumento',subtipo:'Corda'}})
+        const instrumentosSopro = await musicalTalent.findAll({where: {categoria:'Instrumento',subtipo:'Sopro'}})
+        const instrumentosPercussao = await musicalTalent.findAll({where: {categoria:'Instrumento',subtipo:'Percussão'}})
+        const generos = await musicalTalent.findAll({where: {categoria:'Gênero Musical'}})
+        const profissoes = await musicalTalent.findAll({where: {categoria:'Profissão'}})
+        console.log(instrumentosCorda)
+        res.render('thoughts/tags',{sesssion: req.session, instrumentosCorda, instrumentosSopro, instrumentosPercussao, generos, profissoes})
+    }
+
+    static async cadastrarTagPost(req, res) {
+
+        req.session.userId = req.params.id
+        const selectedTalents = req.body.musicalTalents;
+        
+        await Tag.destroy({where: {UserId: req.session.userId}})
+        
+        selectedTalents.forEach(async talent => {
+
+            const talentSpec = await musicalTalent.findOne({where: {descricao: talent}})
+            const tagExists = await Tag.findOne({where: {UserId: req.session.userId,codMusicalTalent: talentSpec.id}})
+            if(!tagExists){
+                const tag = {UserId: req.session.userId, codMusicalTalent: talentSpec.id}
+                await Tag.create(tag);
+            }
+            console.log(talentSpec)
+
+        })
+        req.flash('message','')
+        req.flash('message', 'Talento cadastrado com sucesso!');
+            req.session.save(() => {
+                res.redirect(`/thoughts/profile`);
+            });
     }
 
 }

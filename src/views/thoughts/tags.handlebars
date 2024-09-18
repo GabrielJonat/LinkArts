@@ -1,0 +1,61 @@
+<a href="/thoughts/profile">Voltar</a>
+
+<form action="/thoughts/cadastrarTags/{{session.userId}}" method="post">
+
+<h2>
+    Instrumentos de corda
+</h2>
+<ul>
+{{#each instrumentosCorda}}
+
+<li><input type="checkbox" id="{{this.descricao}}" name="musicalTalents[]" value="{{this.descricao}}"> {{this.descricao}}</li>
+
+{{/each}}
+</ul>
+
+<h2>
+    Instrumentos de sopro
+</h2>
+<ul>
+{{#each instrumentosSopro}}
+
+<li><input type="checkbox" id="{{this.descricao}}" name="musicalTalents[]" value="{{this.descricao}}"> {{this.descricao}}</li>
+
+{{/each}}
+</ul>
+
+<h2>
+    Instrumentos de percussão
+</h2>
+<ul>
+{{#each instrumentosPercussao}}
+
+<li><input type="checkbox" id="{{this.descricao}}" name="musicalTalents[]" value="{{this.descricao}}"> {{this.descricao}}</li>
+
+{{/each}}
+</ul>
+
+<h2>
+    Gêneros Musicais
+</h2>
+<ul>
+{{#each generos}}
+
+<li><input type="checkbox" id="{{this.descricao}}" name="musicalTalents[]" value="{{this.descricao}}"> {{this.descricao}}</li>
+{{/each}}
+</ul>
+
+<h2>
+    Habilidades
+</h2>
+<ul>
+{{#each profissoes}}
+
+<li><input type="checkbox" id="{{this.descricao}}" name="musicalTalents[]" value="{{this.descricao}}"> {{this.descricao}}</li>
+
+{{/each}}
+</ul>
+
+<input type="submit" value="Salvar">
+
+</form>

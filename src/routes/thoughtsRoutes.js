@@ -29,7 +29,10 @@ router.post('/avaliar/:avaliador/:avaliado',ThoughtsController.avaliar)
 router.get('/avaliacoes/:id/:requester',ThoughtsController.viewAvaliacoes)
 router.get('/404',ThoughtsController.load404)
 router.post('/cadastrarEndereco',ThoughtsController.cadastrarEndereco)
+router.post('/cadastrarEvento/:id', upload.single('image'), ThoughtsController.cadastrarEvento)
 router.get('/propostas/:id',ThoughtsController.viewPropostas)
 router.get('/exibirFavoritos/:detentor',ThoughtsController.exibirFavoritos)
+router.get('/musicas/:id',ThoughtsController.cadastrarTag)
+router.post('/cadastrarTags/:id',ThoughtsController.cadastrarTagPost)
 
 module.exports = router 

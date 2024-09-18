@@ -3,7 +3,7 @@
     <div class="container">
 
       <div class="row text-center text-success">
-        <h2 style="font-size: 40px;">Bem vindo(a) de Volta<strong>{{user.name}}</strong>!</h2>
+        <h2 style="font-size: 40px;">Bem vindo(a) de Volta <strong>{{user.name}}</strong>!</h2>
       </div>
       <div class="row my-5">
 
@@ -46,9 +46,9 @@
                       style="font-size: 20px; margin-right: 45px;">{{this.name}}</b></a>
                   <div class="progress" style="margin-left: 40%;" role="progressbar" aria-label="Basic example"
                     aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
-                    <div class="progress-bar bg-info" style="width: 75%"></div>
+                    <div class="progress-bar bg-info" style="width: {{this.porcentagem}}%"></div>
                   </div>
-                  <p class="text-warning mt-1" style="margin-left: 200px; font-size: 20px;"><b>3.25/5.0</b></p>
+                  <p class="text-warning mt-1" style="margin-left: 200px; font-size: 20px;"><b>{{this.media}}/5.0</b></p>
                 </li>
               {{/each}}
             </ul>
