@@ -20,7 +20,22 @@ const { finished } = require('stream');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const AuthController = require('./controllers/AuthController');
+const Dir = require('./models/diretorios')
+const File = require('./models/arquivos')
 const Proposta = require('./models/proposta');
+const multer = require('multer');
+
+// Configurando o armazenamento com multer
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'public/uploads/');  // Pasta onde os arquivos serão armazenados
+    },
+    filename: (req, file, cb) => {
+        cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));  // Nome do arquivo
+    }
+});
+
+const upload = multer({ storage: storage });
 const transporter = nodemailer.createTransport({
   service: 'Gmail',
   auth: {
@@ -266,6 +281,135 @@ app.get('/loadServicos/:avaliador/:avaliado',async (req,res) => {
   })
   res.send(update)
 })
+
+app.get('/loadFiles/:id',async (req,res) => {
+  
+  const owner = req.params.id;
+  let pastas = [];
+  
+  const diretorios = await Dir.findAll({ where: { owner: owner } });
+  
+  for (const item of diretorios) {
+    const obj = {
+      name: item.nome,
+      files: [],
+      videos: [],
+      links: [],
+    };
+  
+    const files = await File.findAll({ where: { diretorio: item.id, categoria: 'file' } });
+    files.forEach(file => {
+      obj.files.push(file.caminho);
+    });
+  
+    const videos = await File.findAll({ where: { diretorio: item.id, categoria: 'video' } });
+    videos.forEach(video => {
+      obj.videos.push(video.caminho);
+    });
+  
+    const links = await File.findAll({ where: { diretorio: item.id, categoria: 'link' } });
+    links.forEach(link => {
+      obj.links.push({ url: link.caminho, name: link.descricao });
+    });
+  
+    pastas.push(obj);
+  }
+  
+  //console.log(owner, pastas, 'teste!!!!!!!');
+  res.send(pastas);
+  
+})
+
+app.post('/thoughts/addVideo/:id/:dir/:url', async (req, res) => {
+  const owner = req.params.id;
+  const dir = req.params.dir;
+  const url = (req.params.url);  // Decodifica a URL que foi codificada no frontend
+  const dirCode = await Dir.findOne({where: {owner:owner,nome:dir}})
+  const fileExists = await File.findOne({ where: {caminho: url,diretorio: dirCode.id}})
+  if(!fileExists){
+    try {
+      const file = {
+          caminho: url,
+          categoria: 'video',
+          diretorio: dirCode.id,
+      };
+
+      await File.create(file);  // Supondo que File.create insira no banco de dados
+
+      res.json({ success: true });  // Retorna uma resposta de sucesso
+  } catch (error) {
+      console.error('Erro ao adicionar vídeo:', error);
+      res.status(500).json({ success: false, message: 'Erro ao adicionar vídeo' });  // Responde com erro
+  }
+  }
+  else{
+    console.log('hey')
+    res.status(500).json({ success: false, message: 'Vídeo já adicionado' });  // Responde com erro
+  }
+  
+});
+
+app.post('/thoughts/addLink/:id/:dir/:url/:name', async (req, res) => {
+  
+  const owner = req.params.id;
+  const dir = req.params.dir;
+  const url = decodeURIComponent(req.params.url);  // Decodifica a URL
+  const name = decodeURIComponent(req.params.name);
+  const dirCode = await Dir.findOne({where: {owner:owner,nome:dir}})
+  const fileExists = await File.findOne({ where: {caminho: url,diretorio: dirCode.id}})
+  if(!fileExists){
+    try {
+      const file = {
+          caminho: url,
+          categoria: 'link',
+          diretorio: dirCode.id,
+          descricao: name
+      };
+
+      await File.create(file);  // Supondo que File.create insira no banco de dados
+
+      res.json({ success: true });  // Retorna uma resposta de sucesso
+  } catch (error) {
+      console.error('Erro ao adicionar vídeo:', error);
+      res.status(500).json({ success: false, message: 'Erro ao adicionar vídeo' });  // Responde com erro
+  }
+  }
+  else{
+    console.log('hey')
+    res.status(500).json({ success: false, message: 'Link já adicionado' });  // Responde com erro
+  }
+  
+});
+
+// Rota para lidar com o upload de arquivos
+app.post('/thoughts/uploadFile/:id', upload.single('file'), async (req, res) => {
+  const owner = req.params.id;
+  const directory = req.body.directory;
+  let fileUrl = null;
+
+  if (req.file) {
+      fileUrl = `/uploads/${req.file.filename}`;  // URL do arquivo enviado
+      const dirCode = await Dir.findOne({where: {owner:owner,nome:directory}})
+      try {
+          // Aqui você pode salvar a referência do arquivo no banco de dados
+          const file = {
+              caminho: fileUrl,
+              categoria: 'file',  // Define a categoria como "file"
+              diretorio: dirCode.id
+          };
+
+          console.log(file)
+          await File.create(file);  // Salva no banco de dados
+
+          res.json({ success: true, message: 'Arquivo enviado com sucesso!' });
+      } catch (error) {
+          console.error('Erro ao salvar o arquivo:', error);
+          res.status(500).json({ success: false, message: 'Erro ao salvar o arquivo.' });
+      }
+  } else {
+      res.status(400).json({ success: false, message: 'Nenhum arquivo foi enviado.' });
+  }
+});
 
 conn.sync()
     .then(() => {

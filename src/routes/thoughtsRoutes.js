@@ -34,5 +34,6 @@ router.get('/propostas/:id',ThoughtsController.viewPropostas)
 router.get('/exibirFavoritos/:detentor',ThoughtsController.exibirFavoritos)
 router.get('/musicas/:id',ThoughtsController.cadastrarTag)
 router.post('/cadastrarTags/:id',ThoughtsController.cadastrarTagPost)
+router.post('/criarPasta/:id',ThoughtsController.criarPasta)
 
 module.exports = router 

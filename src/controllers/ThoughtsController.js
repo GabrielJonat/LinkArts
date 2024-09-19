@@ -12,6 +12,8 @@ const Fav = require('../models/favoritos')
 const Aval = require('../models/avaliacao')
 const Evento = require('../models/eventos')
 const Tag = require('../models/Tag')
+const File = require('../models/diretorios')
+const Dir = require('../models/arquivos')
 
 function converterParaMinutos(horario) {
     if (!horario) return null; // Adicionado para lidar com valores undefined
@@ -321,7 +323,29 @@ module.exports = class ThoughtController{
         const eventos = await Evento.findAll({where: {owner: searched}})
         let type
         const locais = await Local.findAll({where:{UserId:searched}})
+        const tags = await Tag.findAll({where: {UserId: searched}})
+        let hasTags = true
+        if(!tags){
+            hasTags = false
+        }
         const avaliacoes = await Aval.findAll({where: {avaliado: searched}})
+        tags.forEach(async tag => {
+
+            tag.talent = await musicalTalent.findOne({where: {id:tag.codMusicalTalent}})
+            if(tag.talent.categoria == 'Instrumento'){
+                tag.instrumento = true
+            }
+            else{
+                tag.talent.instrumento = false
+            }
+
+            if(tag.talent.categoria == 'Gênero Musical'){
+                tag.genero = true
+            }
+            else{
+                tag.genero = false
+            }
+        })
         let media = 0
         avaliacoes.forEach(aval => {
 
@@ -336,7 +360,7 @@ module.exports = class ThoughtController{
             type = 0
         }
         let selfView = false
-        res.render('thoughts/profile', {session: req.session,user,type,selfView,locais,id,media,porcentagem,eventos})        
+        res.render('thoughts/profile', {session: req.session,user,type,selfView,locais,id,media,porcentagem,eventos,tags,hasTags})        
     }
 
     static async propostaPost(req, res) {
@@ -843,5 +867,37 @@ module.exports = class ThoughtController{
                 res.redirect(`/thoughts/profile`);
             });
     }
+
+    static async criarPasta(req, res) {
+
+        req.session.userId = req.params.id
+        const dir = {
+            nome: req.body.nome,
+            owner: req.session.userId,
+        }
+        
+        const dirExists = await File.findOne({where: {nome: dir.nome,owner: dir.owner}})
+        
+        if(dirExists){
+
+            req.flash('message','')
+            req.flash('message', 'Esta pasta já existe!');
+                req.session.save(() => {
+                    res.redirect(`/thoughts/profile`);
+                });
+        }
+        else{
+
+            await File.create(dir);
+
+            req.flash('message','')
+            req.flash('message', 'Pasta criada com sucesso!');
+                req.session.save(() => {
+                    res.redirect(`/thoughts/profile`);
+                });
+        }
+        
+    }
+      
 
 }
