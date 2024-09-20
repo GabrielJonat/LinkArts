@@ -5,16 +5,18 @@ const FileStore = require('session-file-store')(session);
 const flash = require('express-flash');
 const path = require('path');
 const os = require('os');
+const fs = require('fs')
 const { Op } = require('sequelize');
 const app = express();
 const bodyParser = require('body-parser');
 const conn = require('./db/conn');
 const User = require('./models/user');
-const Message = require('./models/message');
+const Mensagem= require('./models/mensagem');
 const Token = require('./models/token');
 const Local = require('./models/locais')
 const thoughtsRoutes = require('./routes/thoughtsRoutes');
 const authRoutes = require('./routes/authRoutes');
+const chatRoutes = require('./routes/chatRoutes')
 const ThoughtController = require('./controllers/ThoughtsController');
 const { finished } = require('stream');
 const nodemailer = require('nodemailer');
@@ -24,6 +26,10 @@ const Dir = require('./models/diretorios')
 const File = require('./models/arquivos')
 const Proposta = require('./models/proposta');
 const multer = require('multer');
+const http = require('http');
+const socketIo = require('socket.io');
+const server = http.createServer(app); // Criando o servidor HTTP
+const io = socketIo(server); // Passando o servidor para o Socket.io
 
 // Configurando o armazenamento com multer
 const storage = multer.diskStorage({
@@ -92,6 +98,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use('/thoughts', thoughtsRoutes);
 app.use('/', authRoutes);
+app.use('/chat', chatRoutes);
 app.get('/', AuthController.login);
 app.get('/thoughts/login', async (req,res) => {
   
@@ -170,66 +177,36 @@ app.get('/sendCode/:email', async (req, res) => {
     window.alert('Erro inesperado!')
   }
 });
-  app.get('/messages/:talk', async (req, res) => {
-    const user1 = req.params.talk.split(' ')[0]
-    const user2 = req.params.talk.split(' ')[1]
-    const possibilities = user2 + ' ' + user1
-    const firstUser = await User.findOne({where: {id:user1}})
-    const secondUser = await User.findOne({where: {id:user2}})
-    const user1Profile = await Profile.findOne({where: {userId:firstUser.id}})
-    const user2Profile = await Profile.findOne({where: {userId:secondUser.id}})
-    
-    const messages = await Message.findAll({
-      where: {
-        talkId: {
-          [Op.or]: [ user1 + ' ' + user2, possibilities]
-        }
-      }
-    });
-    let update
-    messages.forEach(msg => {  
-      if(msg){
-        let formattedTime = msg.formattedTime
-        let formattedDate = msg.formattedDate
+  
+io.on('connection', (socket) => {
+  console.log('Usuário conectado');
 
-        if(msg.name === firstUser.name){
-        update += `<article class="msg-container msg-remote" id="msg-0">
-          <div class="msg-box">
-            <img src="${user1Profile.image}" style="width: 70px; height: 70px; border-radius: 50%"/>
-            <div class="flr">
-              <div class="messages">
-                <p class="msg" id="msg-0">
-                  ${msg.content}
-                </p>
-              </div>
-              <span class="timestamp"><span class="username">${msg.name}</span>&bull;<span class="posttime">${formattedTime} ${formattedDate}</span></span>
-            </div>
-          </div>
-        </article>`;}
-        else{
-          update += `<article class="msg-container msg-remote" id="msg-0">
-          <div class="msg-box">
-            <img src="${user2Profile.image}" style="width: 70px; height: 70px; border-radius: 50%"/>
-            <div class="flr">
-              <div class="messages">
-                <p class="msg" id="msg-0">
-                  ${msg.content}
-                </p>
-              </div>
-              <span class="timestamp"><span class="username">${msg.name}</span>&bull;<span class="posttime">${formattedTime} ${formattedDate}</span></span>
-            </div>
-          </div>
-        </article>`;
-        }
-      }
-  })
-  if(update){
-  res.send(update.substring(9));
-  }
-  else{
-    res.send(update)
-  }
+  socket.on('enviar_mensagem', async (data) => {
+
+      const { conteudo, remetenteId, destinatarioId } = data;
+      
+      const now = new Date();
+      const hours = now.getHours().toString().padStart(2, '0'); // Horas no formato 00-23
+      const minutes = now.getMinutes().toString().padStart(2, '0'); // Minutos no formato 00-59
+      const seconds = now.getSeconds().toString().padStart(2, '0'); // Segundos no formato 00-59
+
+      const currentTime = `${hours}:${minutes}:${seconds}`;
+      // Salva a mensagem no banco de dados
+      const dia = String(now.getDate()).padStart(2, '0');
+      const mes = String(now.getMonth() + 1).padStart(2, '0'); // Mês começa em 0
+      const ano = now.getFullYear();
+      let dataFormatada = `${dia}/${mes}/${ano}`;
+      const mensagem = await Mensagem.create({ conteudo, remetente: remetenteId, destinatario: destinatarioId, hora: currentTime, data: dataFormatada, visto: false });
+      // Notifica o destinatário que ele recebeu uma nova mensagem
+      io.to(destinatarioId).emit('nova_mensagem', mensagem);
+  });
+
+  // Desconectar o usuário
+  socket.on('disconnect', () => {
+      console.log('Usuário desconectado');
+  });
 });
+
 app.get('/cities/:sigla', async (req, res) => {
 
   const sigla = req.params.sigla
@@ -273,7 +250,7 @@ app.get('/loadServicos/:avaliador/:avaliado',async (req,res) => {
 ], status: 'concluida' } })
   servicos.forEach(item => {
 
-    const dia = String(item.data.getDate()).padStart(2, '0');
+    const dia = String(item.data.getDate() + 1).padStart(2, '0');
             const mes = String(item.data.getMonth() + 1).padStart(2, '0'); // Mês começa em 0
             const ano = item.data.getFullYear();
             item.dataFormatada = `${dia}/${mes}/${ano}`;
@@ -411,9 +388,118 @@ app.post('/thoughts/uploadFile/:id', upload.single('file'), async (req, res) => 
   }
 });
 
+app.delete('/thoughts/deleteFile/:id/:dir/:caminho/:categoria', async (req, res) => {
+   const owner = req.params.id;
+  const dir = req.params.dir;
+  const cat = req.params.categoria;
+  let caminho
+  if(cat == 'file'){
+    caminho = '/uploads/'+req.params.caminho;
+  }
+  else{
+    caminho = req.params.caminho
+  }
+  const dirCode = await Dir.findOne({where: {owner:owner,nome:dir}})
+  try {
+    // Encontre o arquivo no banco de dados
+    const file = await File.findOne({ where: { caminho: caminho, diretorio: dirCode.id, categoria: cat } });
+    console.log(file,caminho,dirCode.id,cat)
+    if (!file) {
+      return res.status(404).json({ success: false, message: 'Arquivo não encontrado.' });
+    }
+
+    if(cat == 'file'){
+    // Caminho absoluto do arquivo na pasta uploads
+    const filePath = path.join(__dirname, 'public', 'uploads', path.basename(file.caminho));
+
+    // Verifique se o arquivo realmente existe
+    if (fs.existsSync(filePath)) {
+      // Deletar o arquivo do sistema de arquivos
+      fs.unlinkSync(filePath);
+    }
+  }
+    // Remover a entrada do banco de dados
+    await file.destroy();
+
+    res.json({ success: true, message: 'Arquivo deletado com sucesso!' });
+  } catch (error) {
+    console.error('Erro ao deletar o arquivo:', error);
+    res.status(500).json({ success: false, message: 'Erro ao deletar o arquivo.' });
+  }
+});
+
+app.delete('/thoughts/deleteDir/:id/:dir', async (req, res) => {
+
+    const owner = req.params.id;
+    const dir = req.params.dir;
+    
+    try{
+
+    const target = await Dir.findOne({where: {owner:owner,nome:dir}})
+
+    const files = await File.findAll({where: {diretorio: target.id}})
+
+    console.log('aaaaaaaaaaaaaaaaaaaa',target.nome,files.length)
+
+    files.forEach(async file => {
+
+      await file.destroy();
+
+    })
+    
+    await target.destroy();
+
+      res.json({ success: true, message: 'Diretor deletado com sucesso!' });
+    } 
+    catch (error) {
+      console.error('Erro ao deletar o diretório:', error);
+      res.status(500).json({ success: false, message: 'Erro ao deletar o diretorio.' });
+    }
+});
+
+// Rota para marcar mensagens como vistas
+app.post('/chat/marcarComoVisto', async (req, res) => {
+  const { remetenteId, destinatarioId } = req.body;
+
+  await Mensagem.update({ visto: true }, {
+      where: {
+          remetenteId,
+          destinatarioId,
+          visto: false  // Só atualizar mensagens não vistas
+      }
+  });
+
+  res.json({ success: true });
+});
+const onlineUsers = {};
+
+io.on('connection', (socket) => {
+    const userId = socket.handshake.query.userId; // Captura o ID do usuário
+    onlineUsers[userId] = socket.id;
+
+    // Notifica outros usuários que ele está online
+    socket.broadcast.emit('user_online', userId);
+
+    socket.on('disconnect', () => {
+        delete onlineUsers[userId];
+        // Notifica outros usuários que ele ficou offline
+        socket.broadcast.emit('user_offline', userId);
+    });
+});
+io.on('connection', (socket) => {
+  socket.on('digitando', (data) => {
+      io.to(data.destinatarioId).emit('usuario_digitando', data.remetenteId);
+  });
+
+  socket.on('parou_de_digitar', (data) => {
+      io.to(data.destinatarioId).emit('usuario_parou_de_digitar', data.remetenteId);
+  });
+});
+
+
 conn.sync()
     .then(() => {
-        app.listen(3000);
+        server.listen(3000);
     })
     .catch((err) => {
         console.log(err);

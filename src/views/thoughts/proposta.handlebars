@@ -59,11 +59,11 @@
             padding: 10%;
         }
     </style>
-<div class="body">
-
-    <div class="form-container">
-         <a href="/thoughts/profile/{{receiver.id}}/{{sender.id}}">Voltar</a>
+<div class="form my-3" style="justify-content: center;
+            align-items: center; display: flex;">
+    <div class="form-container my-3" style="margin~left: 200px;">
         <h2>Proposta para Tocar em {{empresa.name}}</h2>
+        <a href="/thoughts/profile/{{receiver.id}}/{{sender.id}}" class="my-5" style="text-align: center;">Voltar</a>
         <form action="/thoughts/proposta/{{sender.id}}/{{receiver.id}}" method="POST">
             <label for="data_evento">Data do Evento:</label>
             <input type="date" id="data_evento" name="data" required>

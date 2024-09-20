@@ -58,7 +58,7 @@
               <a href="/thoughts/propostas/{{id}}" class="btn btn-primary">Minhas Propostas</a>
               <button class="btn btn-primary" onclick="toggleForm()">Cadastrar Endereço</button>
               <button  class="btn btn-primary" onclick="toggleForm3()">Cadastrar Evento</button>
-              <a href="" class="btn btn-primary">Editar Perfil</a>
+              <a href="/thoughts/edit/{{id}}" class="btn btn-primary">Editar Perfil</a>
 
               <div class="col">
                 <div id="myForm" style="display: none; margin-top: 10px; width: 100%">
@@ -111,16 +111,16 @@
                 
               </div>
             {{else}}
-              <a href="/thoughts/propostaArtista/{{user.id}}" class="btn btn-primary">Fazer Proposta à Empresa</a>
+              <a href="/thoughts/propostaArtista/{{user.id}}/{{id}}" class="btn btn-primary">Fazer Proposta à Empresa</a>
               <a href="" class="btn btn-primary">Abrir Conversa</a>
             {{/if}}
           {{else}}
             {{#if selfView}}
               <a href="/thoughts/propostas/{{id}}" class="btn btn-primary">Minhas Propostas</a>
               <a href="/thoughts/musicas/{{id}}" class="btn btn-primary">Cadastrar Talento Musical</a>
-              <a href="" class="btn btn-primary">Editar Perfil</a>
+              <a href="/thoughts/edit/{{id}}" class="btn btn-primary">Editar Perfil</a>
             {{else}}
-              <a href="/thoughts/propostaEmpresa/{{user.id}}" class="btn btn-primary">Fazer Proposta ao(a) Artista</a>
+              <a href="/thoughts/propostaEmpresa/{{user.id}}/{{id}}" class="btn btn-primary">Fazer Proposta ao(a) Artista</a>
               <a href="" class="btn btn-primary">Abrir Conversa</a>
             {{/if}}
           {{/if}}
@@ -195,7 +195,7 @@
 
                       <div id="avalForm" style="display: none; margin-top: 10px; width: 100%">
                   <form action="/thoughts/avaliar/{{id}}/{{user.id}}" method="POST" style="border: 1px solid #ccc; padding: 20px; width: 300px;">
-                      <label for="conteudo">Mensagem {{user.id}}:</label><br>
+                      <label for="conteudo">Mensagem:</label><br>
                       <input type="text" id="conteudo" name="conteudo" placeholder="Digite o que achou da sua experiência de serviço"><br><br>
 
                       <label for="nota">estrelas:</label>
@@ -368,7 +368,16 @@ function renderDirectories(directories) {
         card.className = 'fileCard';
         card.innerText = directory.name;
         card.onclick = () => toggleModal(index, li, directories); // Passa directories aqui
-        li.appendChild(card);
+        if(isOwner){
+          const deleteButton = document.createElement('button')
+          deleteButton.innerText = 'Deletar'
+          deleteButton.onclick = () => deleteDir(directory.name)
+          li.appendChild(card);
+          li.appendChild(deleteButton)
+        }
+        else{
+          li.appendChild(card);
+        }
 
         // Criando o modal de upload de arquivos, vídeos e links dentro de cada li
         const modal = document.createElement('div');
@@ -438,9 +447,16 @@ function toggleModal(index, li, directories) {
             const videos = directories[index].videos;
             const links = directories[index].links;
 
-            fileList.innerHTML = files.map(file => `<li><a href="${file}" download="${file}">Baixar - ${ file.substring(file.lastIndexOf('/') + 1)}</a></li>`).join('');
+            if(isOwner){
+              fileList.innerHTML = files.map(file => `<li><a href="${file}" download="${file}">Baixar - ${ file.substring(file.lastIndexOf('/') + 1)}</a> <button onclick="deleteFile('file','${directories[index].name}','${file.substring(file.lastIndexOf('/') + 1)}')">Deletar</button></li>`).join('');
+            videoList.innerHTML = videos.map(video => `<iframe src="https://www.youtube.com/embed/${video}" frameborder="0" allowfullscreen></iframe> <button onclick="deleteFile('video','${directories[index].name}','${video}')">Deletar</button>`).join('');
+            linkList.innerHTML = links.map(link => `<li><a href="${link.url}" target="_blank">${link.name}</a> <button onclick="deleteFile('link','${encodeURIComponent(directories[index].name)}','${encodeURIComponent(link.url)}')">Deletar</button></li>`).join('<br>');
+            }
+            else{
+              fileList.innerHTML = files.map(file => `<li><a href="${file}" download="${file}">Baixar - ${ file.substring(file.lastIndexOf('/') + 1)}</a></li>`).join('');
             videoList.innerHTML = videos.map(video => `<iframe src="https://www.youtube.com/embed/${video}" frameborder="0" allowfullscreen></iframe>`).join('');
             linkList.innerHTML = links.map(link => `<li><a href="${link.url}" target="_blank">${link.name}</a></li>`).join('<br>');
+            }
         }
 
 // Função para fazer upload de arquivo
@@ -541,6 +557,52 @@ function extractYouTubeVideoId(url) {
     const regex = /(?:https?:\/\/)?(?:www\.)?youtube\.com\/(?:watch\?v=|embed\/|v\/|.+?v=)?([^&]+)/;
     const match = url.match(regex);
     return match ? match[1] : null;
+}
+
+function deleteFile(categoria,dirName,filePath){
+
+const id = document.getElementById('identity').textContent; 
+console.log(`/thoughts/deleteFile/${id}/${dirName}/${filePath}/${categoria}`)
+  fetch(`/thoughts/deleteFile/${id}/${dirName}/${filePath}/${categoria}`, {
+    method: 'DELETE',
+})
+.then(response => response.json())
+.then(data => {
+    if (data.success) {
+        alert('Arquivo deletado com sucesso!');
+        window.location.reload();  // Atualiza a página após o sucesso
+    } else {
+        alert(data.message);
+    }
+})
+.catch(error => {
+    console.error('Erro ao deletar o arquivo:', error);
+    alert('Ocorreu um erro ao tentar deletar o arquivo.');
+});
+
+}
+
+function deleteDir(dirName){
+
+const id = document.getElementById('identity').textContent; 
+console.log(`/thoughts/deleteDir/${id}/${dirName}`)
+  fetch(`/thoughts/deleteDir/${id}/${dirName}`, {
+    method: 'DELETE',
+})
+.then(response => response.json())
+.then(data => {
+    if (data.success) {
+        alert('Diretório deletado com sucesso!');
+        window.location.reload();  // Atualiza a página após o sucesso
+    } else {
+        alert(data.message);
+    }
+})
+.catch(error => {
+    console.error('Erro ao deletar o diretório:', error);
+    alert('Ocorreu um erro ao tentar deletar o diretório.');
+});
+
 }
 
         // Inicializa os diretórios
